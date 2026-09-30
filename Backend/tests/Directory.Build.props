@@ -1,0 +1,7 @@
+<Project>
+  <!-- Test method names document behavior; do not require XML (CS1591). -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+</Project>

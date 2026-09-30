@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Token names match the ClaimBase design system. */
+@theme {
+  --color-ink: #1b3a4b;
+  --color-ink-dark: #122836;
+  --color-copper: #c46b3a;
+  --color-copper-dark: #a3562c;
+  --color-paper: #f4f1ea;
+  --color-paper-border: #e4ddd2;
+  --color-slate: #1c1917;
+  --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+}

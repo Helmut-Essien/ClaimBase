@@ -1,0 +1,7 @@
+<Project>
+  <!-- CS1591 is an error so missing public XML cannot ship. -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClaimBase.MobileApp.MainPage"
+             BackgroundColor="#F4F1EA">
+
+    <VerticalStackLayout Padding="24" Spacing="12" VerticalOptions="Center">
+        <Label
+            Text="ClaimBase"
+            FontSize="28"
+            FontAttributes="Bold"
+            TextColor="#1B3A4B"
+            SemanticProperties.HeadingLevel="Level1" />
+        <Label
+            Text="Lecturer sign-in and session logging open in a later release."
+            FontSize="16"
+            TextColor="#1C1917" />
+    </VerticalStackLayout>
+
+</ContentPage>

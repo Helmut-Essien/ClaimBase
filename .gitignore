@@ -1,0 +1,13 @@
+bin/
+obj/
+logs/
+.vs/
+.idea/
+*.user
+MobileApp/.vs/
+
+Portal/node_modules/
+Portal/dist/
+Portal/.angular/
+
+dataprotection-keys/
