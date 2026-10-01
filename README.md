@@ -2,7 +2,7 @@
 
 Multi-tenant SaaS for universities to calculate lecturer claims from sessions the lecturer logs, with versioned rates and an on-demand PDF. Biometric imports appear on the report as a presence mark. They do not change what is paid.
 
-Product rules live in `.cursor/skills/`. Slice 0 is the runnable scaffold. Sign-in, courses, and claims are later slices.
+Product rules live in `.cursor/skills/`. Slice 1 adds sign-in. Courses and claims are later slices.
 
 ## Layout
 
@@ -39,6 +39,18 @@ dotnet run --project Backend/src/ClaimBase.Api/ClaimBase.Api.csproj
 API: http://localhost:5190
 
 Health: `GET /health`
+
+On first Development startup the API applies the identity migration and seeds one university. Sign in at http://localhost:4201/login with one of these addresses. The shared password is `Seed:Password` in `appsettings.Development.json` and is not copied here.
+
+| Role | Email |
+|---|---|
+| Tenant admin | `tenantadmin@claimbase.test` |
+| Admin | `admin@claimbase.test` |
+| Head of department | `hod@claimbase.test` |
+| Finance | `finance@claimbase.test` |
+| Lecturer | `lecturer@claimbase.test` |
+
+A lecturer can sign in to the API and is turned away by the portal with "Use the ClaimBase mobile app". Portal routes are `/login` and an empty `/app` shell.
 
 ### 3. Portal
 
@@ -77,7 +89,12 @@ export JWT__KEY="<at least 64 random characters>"
 export CORS__ORIGINS="https://portal.example"
 ```
 
-Do not set `Include Error Detail=true` on the Production connection string. There is no database schema yet, so there is no migration to apply.
+Do not set `Include Error Detail=true` on the Production connection string. Apply EF migrations as a deploy step. The API does not migrate itself in Production.
+
+```bash
+dotnet tool restore
+dotnet tool run dotnet-ef database update --project Backend/src/ClaimBase.Infrastructure/ClaimBase.Infrastructure.csproj --startup-project Backend/src/ClaimBase.Api/ClaimBase.Api.csproj
+```
 
 ## Tests
 

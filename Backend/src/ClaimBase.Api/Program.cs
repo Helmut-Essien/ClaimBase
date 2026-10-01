@@ -4,6 +4,8 @@ using ClaimBase.Api.Middleware;
 using ClaimBase.Application;
 using ClaimBase.Infrastructure;
 using ClaimBase.Infrastructure.Hosting;
+using ClaimBase.Infrastructure.Persistence;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -46,6 +48,8 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddLoginRateLimiter();
+    builder.Services.AddControllers();
     builder.Services.AddHealthChecks();
     builder.Services.AddHsts(options =>
     {
@@ -78,16 +82,33 @@ try
 
     if (app.Environment.IsProduction())
     {
+        var forwarded = new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        };
+        forwarded.KnownNetworks.Clear();
+        forwarded.KnownProxies.Clear();
+        app.UseForwardedHeaders(forwarded);
         app.UseHsts();
         app.UseHttpsRedirection();
     }
 
     if (app.Environment.IsDevelopment())
-        app.MapOpenApi();
+    {
+        // Production applies migrations during deploy. Tests apply them in the fixture. Development applies them on boot.
+        await DevelopmentDatabase.MigrateAndSeedAsync(app.Services, app.Configuration, CancellationToken.None);
+        app.MapOpenApi().AllowAnonymous();
+    }
 
-    // CORS runs before any later error handling so failure responses still include Allow-Origin.
+    // CORS runs before error handling so failure responses still include Allow-Origin.
     app.UseCors("Portal");
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseMiddleware<SecurityHeadersMiddleware>();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.UseRateLimiter();
+    app.UseMiddleware<CurrentTenantMiddleware>();
+    app.MapControllers();
     app.MapHealthChecks("/health").AllowAnonymous();
 
     app.Run();

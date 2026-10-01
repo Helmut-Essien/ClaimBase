@@ -1,0 +1,29 @@
+<div class="min-h-dvh bg-paper text-slate">
+  <header
+    class="flex h-14 items-center justify-between gap-3 bg-ink px-4 text-paper pt-[env(safe-area-inset-top)]"
+  >
+    <p class="font-semibold tracking-tight">ClaimBase</p>
+    <p class="min-w-0 flex-1 truncate text-center text-sm">{{ tenantName() }}</p>
+    <button
+      type="button"
+      class="inline-flex h-11 items-center px-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
+      (click)="signOut()"
+    >
+      Sign out
+    </button>
+  </header>
+
+  <div class="lg:grid lg:grid-cols-[16rem_1fr]">
+    <nav class="flex border-b border-paper-border px-4 lg:block lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
+      <a
+        routerLink="/app"
+        class="inline-flex h-11 items-center font-semibold text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+      >
+        Home
+      </a>
+    </nav>
+    <main class="px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -9,7 +9,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 | Slice | Focus | Status |
 |-------|-------|--------|
 | 0 | Scaffold: `ClaimBase.sln`, Clean Architecture, Portal, MAUI shell, Docker Postgres, README run steps | **Done** |
-| 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | Planned |
+| 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | **Done** |
 | 2 | Academic setup: faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | Planned |
 | 3 | Rates: teaching matrix (position × qualification) and tenant transport rate, overlap rejection | Planned |
 | 4 | Session logs: API semester gate, Portal list, MAUI offline log + sync | Planned |

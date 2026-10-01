@@ -9,6 +9,7 @@
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="NUlid" Version="1.7.2" />
   </ItemGroup>
 
   <PropertyGroup>

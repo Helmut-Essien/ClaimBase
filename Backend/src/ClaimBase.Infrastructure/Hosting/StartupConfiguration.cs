@@ -5,7 +5,6 @@ namespace ClaimBase.Infrastructure.Hosting;
 
 /// <summary>
 /// Fail-fast checks so Production cannot boot with the Development database password, a leaky connection string, or the Development JWT key.
-/// Authentication endpoints arrive in a later slice; the signing key is still required so Production cannot start on an empty secret.
 /// </summary>
 public static class StartupConfiguration
 {

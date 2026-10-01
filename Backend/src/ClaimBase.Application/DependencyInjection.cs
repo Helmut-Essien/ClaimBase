@@ -1,15 +1,15 @@
+using ClaimBase.Application.Common.Behaviors;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClaimBase.Application;
 
-/// <summary>
-/// Registers application use cases. Feature handlers are added in later slices.
-/// </summary>
+/// <summary>Registers application use cases.</summary>
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds MediatR and FluentValidation from this assembly.
+    /// Adds MediatR, FluentValidation, and the validation pipeline from this assembly.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The same service collection.</returns>
@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddMediatR(configuration =>
             configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         return services;
     }
 }

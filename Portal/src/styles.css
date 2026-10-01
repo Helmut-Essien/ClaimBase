@@ -11,3 +11,9 @@
   --color-slate: #1c1917;
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Grain stays on the login brand panel only. */
+.brand-grain {
+  background-image: radial-gradient(rgb(255 255 255 / 0.07) 0.6px, transparent 0.6px);
+  background-size: 4px 4px;
+}
