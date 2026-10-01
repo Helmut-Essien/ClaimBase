@@ -1,5 +1,6 @@
 using System.Text;
 using ClaimBase.Application.Common.Interfaces;
+using ClaimBase.Infrastructure.Academic;
 using ClaimBase.Infrastructure.Identity;
 using ClaimBase.Infrastructure.Persistence;
 using ClaimBase.Infrastructure.Tenancy;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<CurrentTenant>();
         services.AddScoped<ICurrentTenant>(provider => provider.GetRequiredService<CurrentTenant>());
         services.AddScoped<IIdentityReader, EfIdentityReader>();
+        services.AddScoped<IAcademicCatalog, EfAcademicCatalog>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<IClock, SystemClock>();
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));

@@ -48,7 +48,7 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
-    builder.Services.AddLoginRateLimiter();
+    builder.Services.AddLoginRateLimiter(builder.Environment);
     builder.Services.AddControllers();
     builder.Services.AddHealthChecks();
     builder.Services.AddHsts(options =>

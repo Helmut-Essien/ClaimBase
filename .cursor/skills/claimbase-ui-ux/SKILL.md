@@ -78,13 +78,13 @@ Sidebar starts at `lg` (1024px), not `md`, so landscape phones keep the bottom n
 
 ### Sessions
 
-- Columns: lecturer, course code, start, end, duration (display only), semester.
-- Duration is informational. The list does not show a computed pay figure before a claim exists.
+- Columns: lecturer, course code, start, end, duration, semester.
+- The session list does not show a pay figure. The claim later multiplies the hourly rate by this duration.
 
 ### Claim detail
 
 - Header: lecturer, employment type, semester, status, currency.
-- Teaching lines: course, position, qualification, start, end, rate, amount, presence mark.
+- Teaching lines: course, position, qualification, start, end, hourly rate, hours, amount, presence mark.
 - Presence mark: a check when `biometricPresent` is true, an empty box when false. Caption: "Device check. This does not change the amount."
 - Transport lines grouped by date.
 - Omitted sessions listed under the lines, with the reason (no teaching rate, no position on that date, no transport rate).

@@ -134,7 +134,7 @@ Custom CSS in `Portal` gets a short comment stating why the rule exists (token m
 Place the comment **above** the block.
 
 - Session save checks an `Open` semester and the tenant-local start date.
-- Teaching pay is the flat rate once per session. Duration is stored for the report and is not a multiplier.
+- Teaching pay is the hourly rate for the lecturer's rank and the course qualification, multiplied by the session length in hours. An open-ended rate carries into later semesters until management issues a new one.
 - Transport is one line per lecturer per local calendar day.
 - Claim lines copy position, qualification, rate, currency, and amount so later edits do not rewrite history.
 - `Approved` claims are not rebuilt.

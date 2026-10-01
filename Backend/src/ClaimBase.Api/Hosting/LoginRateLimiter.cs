@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Hosting;
 
 namespace ClaimBase.Api.Hosting;
 
@@ -11,13 +12,17 @@ public static class LoginRateLimiter
 
     /// <summary>
     /// Adds a fixed window of 10 login attempts per minute per client IP.
+    /// The Testing host raises the window so the suite can sign in for every case.
     /// </summary>
     /// <param name="services">The service collection.</param>
+    /// <param name="environment">Host environment.</param>
     /// <returns>The same service collection.</returns>
-    public static IServiceCollection AddLoginRateLimiter(this IServiceCollection services)
+    public static IServiceCollection AddLoginRateLimiter(this IServiceCollection services, IHostEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(environment);
 
+        var permitLimit = environment.IsEnvironment("Testing") ? 10_000 : 10;
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -26,7 +31,7 @@ public static class LoginRateLimiter
                     httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                     _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 10,
+                        PermitLimit = permitLimit,
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0
                     }));

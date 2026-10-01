@@ -98,9 +98,9 @@ Money is `numeric(18,2)` and ≥ 0. Instants are UTC. A "day" is the calendar da
 
 **StaffPosition:** Id, TenantId, StaffId, PositionTitleId, EffectiveFrom, EffectiveTo?. Child of `Staff`. Half-open ranges must not overlap for one staff member. This is the record the claim engine reads.
 
-**TeachingRate:** Id, TenantId, PositionTitleId, QualificationId, Amount, EffectiveFrom, EffectiveTo?. No overlapping ranges for the same pair. The rate follows the title, not an individual lecturer.
+**TeachingRate:** Id, TenantId, PositionTitleId, QualificationId, Amount, EffectiveFrom, EffectiveTo?. `Amount` is cedis per hour in the tenant currency. One cell is one rank × one course qualification (Senior Lecturer × Diploma, Lecturer × Diploma). The rate follows the title, not an individual lecturer. No overlapping ranges for the same pair. `EffectiveTo` null means the amount continues through later semesters. Rates are not stored on a semester and are not copied when a semester is created. Add a row only when management issues a new amount; set the previous row's end to the new row's start.
 
-**TransportRate:** Id, TenantId, Amount, EffectiveFrom, EffectiveTo?. One timeline per tenant.
+**TransportRate:** Id, TenantId, Amount, EffectiveFrom, EffectiveTo?. One timeline per tenant, paid once per teaching day for every rank. The same carry-forward rule applies: an open-ended row stays in force until management replaces it.
 
 **SessionLog:** Id, TenantId, ClientId (≤32, unique per tenant), SemesterId, StaffId, CourseId, StartsAt, EndsAt, RecordedAt, Status (`Submitted` \| `Exception` \| `Void`), CourseCode snapshot (≤32). EndsAt > StartsAt. No overlap for the same StaffId.
 
@@ -112,17 +112,17 @@ Money is `numeric(18,2)` and ≥ 0. Instants are UTC. A "day" is the calendar da
 
 **ClaimDepartment:** Id, TenantId, ClaimId, FacultyName (≤200), DepartmentName (≤200). Copied from the lecturer's assignments when the claim is built. The PDF reads this snapshot. Later assignment changes do not rewrite it.
 
-**ClaimLine:** Id, TenantId, ClaimId, LineType (`Teaching` \| `Transport`), SessionLogId? (teaching), TeachingDate, CourseCode?, QualificationName?, PositionName?, RateAmount, Quantity (always 1), Amount, StartsAt?, EndsAt?, BiometricPresent, EmploymentType snapshot
+**ClaimLine:** Id, TenantId, ClaimId, LineType (`Teaching` \| `Transport`), SessionLogId? (teaching), TeachingDate, CourseCode?, QualificationName?, PositionName?, RateAmount, Quantity, Amount, StartsAt?, EndsAt?, BiometricPresent, EmploymentType snapshot
 
-`Amount` on a teaching line equals `RateAmount`. Transport lines have null course fields. `BiometricPresent` defaults false.
+On a teaching line, `RateAmount` is the hourly rate and `Quantity` is the session length in hours (minutes ÷ 60). `Amount` is `RateAmount × Quantity`, rounded to 2 decimal places. On a transport line, `Quantity` is 1 and `Amount` equals `RateAmount`. Transport lines have null course fields. `BiometricPresent` defaults false.
 
 ## Rate resolution
 
 At build time, for each submitted session:
 
 1. Load that staff member's position record whose range contains the session's local start date.
-2. Load the teaching rate for that position and the course qualification whose range contains that date.
-3. If either is missing, omit the session and return it in `omittedSessions`.
+2. Load the teaching rate for that position and the course qualification whose range contains that date. An open-ended rate from an earlier semester matches. Do not look for a rate row that belongs to the semester.
+3. If either is missing, omit the session and return it in `omittedSessions`. Hours are not applied when there is no rate.
 4. Group included sessions by local date. For each date, load the transport rate. A missing transport rate omits that day's transport line and lists the date.
 
 Approved claims are not rebuilt. Changing a rate, a position, or a course qualification afterward does not update existing claim lines.
@@ -158,7 +158,7 @@ When adding a writable field, complete every applicable layer in the same slice.
 | BiometricId | 64 | Optional on staff. When set, the same value as the device id. Unique per tenant |
 | CurrencyCode | 3 | ISO |
 | TimeZoneId | 64 | IANA |
-| ClientId | 32 | ULID from the device |
+| ClientId | 26 | ULID from the device (`Ulid.NewUlid().ToString()`) |
 | Note | 400 | Approval notes |
 | FileName | 260 | Biometric workbook |
 

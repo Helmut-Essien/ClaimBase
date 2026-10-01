@@ -23,7 +23,7 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 | Hangfire | Enqueue a job with an explicit `TenantId` argument. Keep the job idempotent. Do not capture an HTTP `HttpContext`. |
 | QuestPDF | Compose from the snapshotted claim lines. Stream the response. Do not re-query live rates while painting an approved claim. |
 | Angular | Standalone components, `inject()`, `OnPush`, Signals, lazy `loadComponent` / `loadChildren`, typed reactive forms, `takeUntilDestroyed()`. The feature `data/` folder owns HTTP. `core/` does not import features. |
-| MAUI MVVM | `CommunityToolkit.Mvvm`, DI-constructed view models, compiled bindings where the page sets `x:DataType`, async `[RelayCommand]` for I/O. Pages do not touch SQLite or `HttpClient`. |
+| MAUI MVVM | `CommunityToolkit.Mvvm`, DI-constructed view models, `x:DataType` compiled bindings, async `[RelayCommand]` for I/O. A service that uses the SQLite `DbContext` is scoped, not a singleton. Pages do not touch SQLite or `HttpClient`. |
 
 ## Best practices that keep it fast
 
@@ -70,10 +70,11 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 
 ## MobileApp
 
-- Sync sends the outbox in one batch, not one HTTP call per keystroke.
+- Sync sends the outbox in one batch, not one HTTP call per keystroke. One `SaveChanges` per batch, not per row.
 - The local session list reads SQLite from the ViewModel command. It does not block the UI thread on the network.
-- ViewModels expose bindable state. Pages do not reload lists from code-behind.
+- ViewModels expose bindable state. Pages do not reload lists from code-behind. Tab pages use a singleton view model. A form page uses a transient view model.
 - Course-code lookup hits the API when online and uses the last synced course list when offline. Keep that list to the tenant's courses, not a full staff dump.
+- Applying a server pull must not enqueue those rows again. Turn change tracking off for that write and turn it back on in `finally`.
 
 ## Anti-patterns
 

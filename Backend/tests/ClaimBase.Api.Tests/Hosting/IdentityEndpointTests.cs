@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using ClaimBase.Application.Common.Interfaces;
+using ClaimBase.Domain.Academic;
 using ClaimBase.Domain.Identity;
 using ClaimBase.Infrastructure.Persistence;
 using ClaimBase.Infrastructure.Tenancy;
@@ -161,6 +162,21 @@ public class IdentityEndpointTests
         var createdAt = DateTimeOffset.UtcNow;
         if (!await db.Tenants.IgnoreQueryFilters().AnyAsync(tenant => tenant.Id == tenantId))
             db.Tenants.Add(Tenant.Create(tenantId, "Test University", "GHS", "Africa/Accra", createdAt));
+
+        if (departmentId is not null)
+        {
+            var facultyId = "01JF" + departmentId[4..];
+            if (!await db.Faculties.IgnoreQueryFilters().AnyAsync(faculty => faculty.Id == facultyId))
+                db.Faculties.Add(Faculty.Create(facultyId, tenantId, "Faculty " + facultyId[^6..]));
+
+            if (!await db.Departments.IgnoreQueryFilters().AnyAsync(department => department.Id == departmentId))
+                db.Departments.Add(Department.Create(departmentId, tenantId, facultyId, "Department"));
+        }
+
+        if (staffId is not null && !await db.Staff.IgnoreQueryFilters().AnyAsync(staff => staff.Id == staffId))
+        {
+            db.Staff.Add(Staff.Create(staffId, tenantId, staffId, "Test Lecturer", null, EmploymentType.PartTime, null));
+        }
 
         db.Users.Add(User.Create(
             userId,

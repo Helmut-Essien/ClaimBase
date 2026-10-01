@@ -1,4 +1,5 @@
 using ClaimBase.Application.Common.Interfaces;
+using ClaimBase.Domain.Academic;
 using ClaimBase.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,33 @@ public sealed class AppDbContext : DbContext
     /// <summary>Users.</summary>
     public DbSet<User> Users => Set<User>();
 
+    /// <summary>Faculties.</summary>
+    public DbSet<Faculty> Faculties => Set<Faculty>();
+
+    /// <summary>Departments.</summary>
+    public DbSet<Department> Departments => Set<Department>();
+
+    /// <summary>Semesters.</summary>
+    public DbSet<Semester> Semesters => Set<Semester>();
+
+    /// <summary>Qualifications.</summary>
+    public DbSet<Qualification> Qualifications => Set<Qualification>();
+
+    /// <summary>Position titles.</summary>
+    public DbSet<PositionTitle> PositionTitles => Set<PositionTitle>();
+
+    /// <summary>Courses.</summary>
+    public DbSet<Course> Courses => Set<Course>();
+
+    /// <summary>Staff.</summary>
+    public DbSet<Staff> Staff => Set<Staff>();
+
+    /// <summary>Staff department assignments.</summary>
+    public DbSet<StaffDepartment> StaffDepartments => Set<StaffDepartment>();
+
+    /// <summary>Staff position appointments.</summary>
+    public DbSet<StaffPosition> StaffPositions => Set<StaffPosition>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,5 +67,14 @@ public sealed class AppDbContext : DbContext
         // Empty _tenantId matches nothing. That is deliberate: a query without a resolved tenant must not scan every university.
         modelBuilder.Entity<Tenant>().HasQueryFilter(tenant => tenant.Id == _tenantId);
         modelBuilder.Entity<User>().HasQueryFilter(user => user.TenantId == _tenantId);
+        modelBuilder.Entity<Faculty>().HasQueryFilter(faculty => faculty.TenantId == _tenantId);
+        modelBuilder.Entity<Department>().HasQueryFilter(department => department.TenantId == _tenantId);
+        modelBuilder.Entity<Semester>().HasQueryFilter(semester => semester.TenantId == _tenantId);
+        modelBuilder.Entity<Qualification>().HasQueryFilter(qualification => qualification.TenantId == _tenantId);
+        modelBuilder.Entity<PositionTitle>().HasQueryFilter(title => title.TenantId == _tenantId);
+        modelBuilder.Entity<Course>().HasQueryFilter(course => course.TenantId == _tenantId);
+        modelBuilder.Entity<Staff>().HasQueryFilter(staff => staff.TenantId == _tenantId);
+        modelBuilder.Entity<StaffDepartment>().HasQueryFilter(assignment => assignment.TenantId == _tenantId);
+        modelBuilder.Entity<StaffPosition>().HasQueryFilter(position => position.TenantId == _tenantId);
     }
 }

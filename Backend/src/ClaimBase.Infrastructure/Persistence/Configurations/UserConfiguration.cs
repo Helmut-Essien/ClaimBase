@@ -1,3 +1,4 @@
+using ClaimBase.Domain.Academic;
 using ClaimBase.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,7 +20,6 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
                 "\"Role\" IN ('TenantAdmin', 'Admin', 'HeadOfDepartment', 'Finance', 'Lecturer')");
             table.HasCheckConstraint("CK_Users_Email", "char_length(\"Email\") > 0");
             table.HasCheckConstraint("CK_Users_DisplayName", "char_length(\"DisplayName\") > 0");
-            // Department and staff tables arrive later. These checks still stop a head of department or lecturer from being saved half-empty.
             table.HasCheckConstraint(
                 "CK_Users_HodDepartment",
                 "\"Role\" <> 'HeadOfDepartment' OR \"DepartmentId\" IS NOT NULL");
@@ -35,10 +35,11 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(user => user.DisplayName).HasMaxLength(UserConstraints.DisplayNameMaxLength).IsRequired();
         builder.Property(user => user.PasswordHash).HasMaxLength(UserConstraints.PasswordHashMaxLength).IsRequired();
         builder.Property(user => user.Role).HasConversion<string>().HasMaxLength(UserConstraints.RoleMaxLength).IsRequired();
-        // No foreign keys yet. Slice 2 adds Department and Staff. The ids still have to be real ULIDs.
         builder.Property(user => user.DepartmentId).HasMaxLength(UserConstraints.IdMaxLength);
         builder.Property(user => user.StaffId).HasMaxLength(UserConstraints.IdMaxLength);
         builder.Property(user => user.CreatedAt).IsRequired();
+        builder.HasOne<Department>().WithMany().HasForeignKey(user => user.DepartmentId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Staff>().WithMany().HasForeignKey(user => user.StaffId).OnDelete(DeleteBehavior.Restrict);
 
         // Leading TenantId supports the global filter. Email stays unique inside one university only.
         builder.HasIndex(user => new { user.TenantId, user.Email }).IsUnique();

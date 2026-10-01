@@ -1,4 +1,5 @@
 using ClaimBase.Application.Common.Interfaces;
+using ClaimBase.Domain.Academic;
 using ClaimBase.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,8 +7,9 @@ using Microsoft.Extensions.Configuration;
 namespace ClaimBase.Infrastructure.Persistence;
 
 /// <summary>
-/// Inserts one development university and one user per role. The password is read from configuration and is not in source.
-/// Department and staff rows do not exist yet; the head of department and the lecturer still store those ids.
+/// Inserts one development university, its faculty and department, one lecturer, and one user per role.
+/// The password is read from configuration and is not in source.
+/// Parents are inserted before users so the department and staff foreign keys can be applied.
 /// </summary>
 public static class DevelopmentSeed
 {
@@ -29,11 +31,17 @@ public static class DevelopmentSeed
     /// <summary>Development lecturer user id.</summary>
     public const string LecturerUserId = "01JB0000000000000000000006";
 
-    /// <summary>Placeholder department id until the Department table exists.</summary>
+    /// <summary>Development department id.</summary>
     public const string DepartmentId = "01JB0000000000000000000007";
 
-    /// <summary>Placeholder staff id until the Staff table exists.</summary>
+    /// <summary>Development staff id.</summary>
     public const string StaffId = "01JB0000000000000000000008";
+
+    /// <summary>Development faculty id.</summary>
+    public const string FacultyId = "01JB0000000000000000000009";
+
+    /// <summary>Development staff-department assignment id.</summary>
+    public const string StaffDepartmentId = "01JB000000000000000000000A";
 
     /// <summary>Tenant admin email.</summary>
     public const string TenantAdminEmail = "tenantadmin@claimbase.test";
@@ -82,6 +90,10 @@ public static class DevelopmentSeed
         var tenant = Tenant.Create(TenantId, "Development University", "GHS", "Africa/Accra", createdAt);
 
         db.Tenants.Add(tenant);
+        db.Faculties.Add(Faculty.Create(FacultyId, TenantId, "Development Faculty"));
+        db.Departments.Add(Department.Create(DepartmentId, TenantId, FacultyId, "Development Department"));
+        db.Staff.Add(Staff.Create(StaffId, TenantId, "DEV-LEC", "Dev Lecturer", LecturerEmail, EmploymentType.PartTime, null));
+        db.StaffDepartments.Add(StaffDepartment.Create(StaffDepartmentId, TenantId, StaffId, DepartmentId));
         db.Users.Add(User.Create(TenantAdminUserId, TenantId, TenantAdminEmail, "Dev Tenant Admin", hash, UserRole.TenantAdmin, null, null, createdAt));
         db.Users.Add(User.Create(AdminUserId, TenantId, AdminEmail, "Dev Admin", hash, UserRole.Admin, null, null, createdAt));
         db.Users.Add(User.Create(HeadOfDepartmentUserId, TenantId, HeadOfDepartmentEmail, "Dev Head of Department", hash, UserRole.HeadOfDepartment, DepartmentId, null, createdAt));

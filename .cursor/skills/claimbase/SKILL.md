@@ -5,8 +5,9 @@ description: >-
   ASP.NET Core Clean Architecture API, .NET MAUI lecturer app using MVVM,
   PostgreSQL, JWT, Hangfire, QuestPDF. Session logs are the payable source;
   biometric punches are a PDF checkmark only. Enforces effective-dated
-  position × qualification rates snapshotted onto claim lines, semester
-  gating, and full-stack field constraints. Generated code must ship with
+  hourly position × qualification rates that carry into later semesters
+  and are snapshotted onto claim lines, semester gating, and full-stack
+  field constraints. Generated code must ship with
   XML or JSDoc on every public member and inline comments on product
   invariants. Generated code is performance-first and idiomatic for Clean
   Architecture, ASP.NET Core, EF Core, Angular, and MAUI MVVM: paged
@@ -22,9 +23,9 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 
 ## Vision
 
-1. Tenant admins open a semester, then maintain courses, qualifications, staff, and rates. Each lecturer's positions are records on that staff member.
+1. Tenant admins open a semester, then maintain courses, qualifications, and staff. Each lecturer's positions are records on that staff member. Teaching and transport rates are a separate dated schedule. Opening a semester does not require new rates.
 2. Lecturers log each session on MobileApp: course code, start, end. The phone works offline and syncs later.
-3. The claim engine prices each session with the position and qualification rate in force on that date, plus one transport amount per distinct teaching day.
+3. The claim engine prices each session with the hourly rate for that lecturer's rank and the course qualification in force on that date, multiplied by the session length in hours, plus one transport amount per distinct teaching day.
 4. HoD reviews, Finance approves, and the PDF is generated on demand from the frozen lines.
 5. Biometric Excel imports add a presence checkmark beside each session on that PDF.
 
@@ -32,7 +33,7 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 
 **Report-only:** biometric punches. A power cut, a faulty device, or a missing file never reduces a claim amount.
 
-**Non-goals:** timetable import, hourly pay (duration is stored and printed, not multiplied), using punches as a pay gate, one database per tenant, Redis.
+**Non-goals:** timetable import, a separate rate setup for every semester, using punches as a pay gate, one database per tenant, Redis.
 
 ## Delivery rules
 
@@ -55,7 +56,7 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 | Backend | ASP.NET Core Web API, MediatR, FluentValidation |
 | ORM | EF Core + Npgsql |
 | Database | PostgreSQL (Docker) |
-| IDs | ULID string primary keys |
+| IDs | ULID strings via NUlid (`Ulid.NewUlid().ToString()`), 26 characters. Never `Guid` and never the `Ulid` type on the wire |
 | Auth | ClaimBase-issued JWT |
 | Passwords | BCrypt |
 | Jobs | Hangfire (biometric import, presence refresh) |
@@ -129,6 +130,7 @@ This is a modular monolith: one API process, feature folders (`Identity`, `Acade
 ## Coding standards
 
 - Nullable reference types, async/await, constructor DI.
+- **Primary keys are ULIDs.** Server code calls `EntityIds.New()`. The lecturer app calls `Ulid.NewUlid().ToString()` for `clientId` before the row is stored. Both use the NUlid package. Persist and send the value as a `string` of 26 Crockford characters. Do not use `Guid`, a truncated GUID, or an `Ulid` property on an entity or DTO. Stable development seed ids are fixed 26-character strings so local logins stay the same. New rows are not hand-typed ids.
 - Feature folders + MediatR + FluentValidation.
 - Private entity setters; factory methods with domain guards.
 - Enums stored as PostgreSQL strings; EF CHECK constraints for enum sets and non-empty required strings.
@@ -146,10 +148,10 @@ This is a modular monolith: one API process, feature folders (`Identity`, `Acade
 ## Claim invariants
 
 1. Session create requires a semester in `Open` whose date range covers the session's local start date.
-2. Teaching amount = teaching rate for (position on the session date, course qualification) × 1 session.
-3. Transport amount = transport rate in force on that local date × 1, once per staff member per local calendar day that has a teaching line.
+2. Teaching amount = hourly rate for (position on the session date, course qualification) × hours. Hours are `(EndsAt − StartsAt)` in minutes ÷ 60. The line amount is rounded to 2 decimal places. A Senior Lecturer on a Diploma course can be GHS 10 per hour while a Lecturer on that same course is GHS 5 per hour.
+3. Transport amount = transport rate in force on that local date × 1, once per staff member per local calendar day that has a teaching line. Transport is not hourly and does not depend on rank or qualification.
 4. Resolve the lecturer's position from the position records owned by that staff member. Resolve qualification from the course. Copy position name, qualification name, rate, currency, and amount onto the claim line.
-5. Overlapping effective ranges for the same position + qualification (or for transport) are rejected.
+5. Overlapping effective ranges for the same position + qualification (or for transport) are rejected. A rate with no end date stays in force through later semesters. A new row is added only when management issues a new schedule.
 6. A session with no matching rate stays off the claim and appears on the exception list.
 7. Draft claims can be rebuilt. `Approved` claims are immutable.
 8. `BiometricPresent` is true when the lecturer has a `BiometricId` and a punch on the session's local calendar date carries that same id. A missing id or a missing punch leaves the mark empty and still pays the line.

@@ -106,11 +106,12 @@ People who can be claimed, including part-time and full-time.
 **Route:** `/app/rates`
 
 ### Purpose
-Set the teaching matrix and the transport rate.
+Set the hourly teaching matrix and the transport rate. This page is not part of creating a semester. An amount with no end date keeps applying in later semesters until management issues a new one.
 
 ### Content
-- Matrix: one amount per position and qualification, plus effective from / to.
-- Transport section: a single timeline for the tenant. Copy states it is paid once per teaching day, for every position.
+- Matrix: cedis per hour for one rank and one qualification (Senior Lecturer × Diploma, Lecturer × Diploma), plus effective from / to. Leave the end date empty to carry the amount forward.
+- Saving a new amount starts a new row. It does not ask the admin to re-enter the whole matrix for the next semester.
+- Transport section: a single timeline for the tenant. Copy states it is paid once per teaching day, for every position, and is not an hourly rate.
 - Gap hint: dates with no row will be omitted from claims, not priced at zero silently.
 
 ---
