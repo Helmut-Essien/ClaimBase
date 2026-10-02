@@ -1,9 +1,61 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
-/** Honest empty home. Counts stay at zero until claims and sessions exist. */
+import { AuthService } from '../../../core/auth/auth.service';
+import { canManageSetup } from '../../../core/auth/portal-role';
+import { AcademicApi } from '../../academic/data/academic.api';
+import { PAGE_LIMITS } from '../../../shared/paging/page-limits';
+
+/**
+ * What this role should do next.
+ * Claim and omitted-session counts stay at zero until those slices exist.
+ */
 @Component({
   selector: 'app-home',
+  imports: [RouterLink],
   templateUrl: './home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {}
+export class HomeComponent {
+  private readonly auth = inject(AuthService);
+  private readonly semesters = inject(AcademicApi);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Tenant admins and admins can open a semester. Other roles cannot call that API. */
+  readonly canSetup = canManageSetup(this.auth.profile()?.role);
+
+  /** Name of the open semester, once the list returns. */
+  readonly openSemester = signal<string | null>(null);
+
+  /** True when an admin's semester list has no Open row. */
+  readonly noOpenSemester = signal(false);
+
+  /** True while an admin's semester list is loading. */
+  readonly loadingSemester = signal(this.canSetup);
+
+  /** Shown when the semester list fails. */
+  readonly semesterError = signal<string | null>(null);
+
+  constructor() {
+    if (!this.canSetup) {
+      return;
+    }
+
+    this.semesters
+      .listSemesters(1, PAGE_LIMITS.maxSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          const open = result.items.find((semester) => semester.status === 'Open');
+          this.openSemester.set(open?.name ?? null);
+          this.noOpenSemester.set(!open);
+          this.loadingSemester.set(false);
+        },
+        error: () => {
+          this.loadingSemester.set(false);
+          this.semesterError.set('Semesters could not be loaded.');
+        },
+      });
+  }
+}

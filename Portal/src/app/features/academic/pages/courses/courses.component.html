@@ -1,0 +1,138 @@
+<h1 class="page-title">Courses</h1>
+<p class="mt-2 max-w-xl text-base">
+  Qualifications and courses are shared by the university. A lecturer's position is recorded on the staff page, not here.
+</p>
+
+<section class="mt-8 max-w-xl">
+  <h2 class="text-lg font-semibold text-ink">Qualifications</h2>
+  <form class="mt-4" [formGroup]="qualificationForm" (ngSubmit)="submitQualification()" novalidate>
+    <label class="cb-label" for="qualification-name">Name</label>
+    <input
+      id="qualification-name"
+      type="text"
+      formControlName="name"
+      [attr.maxlength]="limits.shortName"
+      class="cb-input"
+    />
+    @if (qualificationForm.controls.name.touched && qualificationForm.controls.name.invalid) {
+      <p class="cb-field-error">Enter a qualification name.</p>
+    }
+    @if (qualificationError()) {
+      <p class="cb-banner" role="alert">{{ qualificationError() }}</p>
+    }
+    <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingQualification()">
+      {{ submittingQualification() ? 'Please wait…' : 'Add qualification' }}
+    </button>
+  </form>
+
+  @if (qualificationLoadError()) {
+    <p class="cb-banner" role="alert">{{ qualificationLoadError() }}</p>
+  } @else if (loadingQualifications() && qualifications().length === 0) {
+    <p class="mt-6 text-base">Please wait…</p>
+  } @else if (qualifications().length === 0) {
+    <p class="mt-6 text-base">No qualifications yet.</p>
+  } @else {
+    <ul class="mt-6 space-y-3">
+      @for (qualification of qualifications(); track qualification.id) {
+        <li class="cb-card">{{ qualification.name }}</li>
+      }
+    </ul>
+    <app-pager
+      [page]="qualificationPage()"
+      [pageSize]="pageSize"
+      [totalCount]="qualificationTotal()"
+      (pageChange)="loadQualifications($event)"
+    />
+  }
+</section>
+
+<section class="mt-10 max-w-3xl">
+  <h2 class="text-lg font-semibold text-ink">Courses</h2>
+  @if (loadingChoices()) {
+    <p class="mt-4 text-base">Please wait…</p>
+  } @else if (choices().length === 0) {
+    <p class="mt-4 text-base">Add a qualification before adding a course.</p>
+  } @else {
+    <form class="mt-4" [formGroup]="courseForm" (ngSubmit)="submitCourse()" novalidate>
+      <label class="cb-label" for="course-code">Code</label>
+      <input
+        id="course-code"
+        type="text"
+        formControlName="code"
+        [attr.maxlength]="limits.courseCode"
+        autocapitalize="characters"
+        class="cb-input font-mono uppercase"
+      />
+      @if (courseForm.controls.code.touched && courseForm.controls.code.invalid) {
+        <p class="cb-field-error">Enter a course code.</p>
+      }
+      <label class="cb-label" for="course-name">Name</label>
+      <input id="course-name" type="text" formControlName="name" [attr.maxlength]="limits.name" class="cb-input" />
+      @if (courseForm.controls.name.touched && courseForm.controls.name.invalid) {
+        <p class="cb-field-error">Enter a course name.</p>
+      }
+      <label class="cb-label" for="course-qualification">Qualification</label>
+      <select id="course-qualification" formControlName="qualificationId" class="cb-input">
+        @for (qualification of choices(); track qualification.id) {
+          <option [value]="qualification.id">{{ qualification.name }}</option>
+        }
+      </select>
+      @if (choicesTruncated()) {
+        <p class="mt-2 text-sm text-muted">Showing the first {{ lookupSize }} qualifications.</p>
+      }
+      @if (courseError()) {
+        <p class="cb-banner" role="alert">{{ courseError() }}</p>
+      }
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+        <button type="submit" class="cb-button cb-button-primary cb-button-block" [disabled]="submittingCourse()">
+          {{ submittingCourse() ? 'Please wait…' : editingId() ? 'Save course' : 'Add course' }}
+        </button>
+        @if (editingId()) {
+          <button type="button" class="cb-button cb-button-secondary" (click)="cancelEdit()">Cancel</button>
+        }
+      </div>
+    </form>
+  }
+
+  @if (courseLoadError()) {
+    <p class="cb-banner" role="alert">{{ courseLoadError() }}</p>
+  } @else if (loadingCourses() && courses().length === 0) {
+    <p class="mt-6 text-base">Please wait…</p>
+  } @else if (courses().length === 0) {
+    <p class="mt-6 text-base">No courses yet.</p>
+  } @else {
+    <ul class="mt-6 space-y-3 lg:hidden">
+      @for (course of courses(); track course.id) {
+        <li class="cb-card">
+          <p class="font-mono font-semibold text-ink">{{ course.code }}</p>
+          <p class="mt-1">{{ course.name }}</p>
+          <p class="mt-1 text-sm text-muted">{{ course.qualificationName }}</p>
+          <button type="button" class="cb-button cb-button-secondary mt-3" (click)="edit(course)">Edit</button>
+        </li>
+      }
+    </ul>
+    <table class="mt-6 hidden w-full border-collapse lg:table">
+      <thead>
+        <tr>
+          <th class="cb-th">Code</th>
+          <th class="cb-th">Name</th>
+          <th class="cb-th">Qualification</th>
+          <th class="cb-th"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (course of courses(); track course.id) {
+          <tr>
+            <td class="cb-td font-mono font-semibold">{{ course.code }}</td>
+            <td class="cb-td">{{ course.name }}</td>
+            <td class="cb-td">{{ course.qualificationName }}</td>
+            <td class="cb-td">
+              <button type="button" class="cb-button cb-button-secondary" (click)="edit(course)">Edit</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="coursePage()" [pageSize]="pageSize" [totalCount]="courseTotal()" (pageChange)="loadCourses($event)" />
+  }
+</section>

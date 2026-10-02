@@ -1,0 +1,53 @@
+<h1 class="page-title">Campuses</h1>
+<p class="mt-2 max-w-xl text-base">A campus belongs to this university. Semesters and rates stay with the university, not with a campus.</p>
+
+<form class="mt-6 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label class="cb-label" for="campus-name">Name</label>
+  <input
+    id="campus-name"
+    type="text"
+    formControlName="name"
+    [attr.maxlength]="limits.name"
+    class="cb-input"
+  />
+  @if (form.controls.name.touched && form.controls.name.invalid) {
+    <p class="cb-field-error">Enter a campus name.</p>
+  }
+  @if (errorMessage()) {
+    <p class="cb-banner" role="alert">{{ errorMessage() }}</p>
+  }
+  <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submitting()">
+    {{ submitting() ? 'Please wait…' : 'Add campus' }}
+  </button>
+</form>
+
+@if (loadError()) {
+  <p class="cb-banner" role="alert">{{ loadError() }}</p>
+} @else if (loading() && items().length === 0) {
+  <p class="mt-8 text-base">Please wait…</p>
+} @else if (items().length === 0) {
+  <p class="mt-8 text-base">No campuses yet.</p>
+} @else {
+  <ul class="mt-8 space-y-3 lg:hidden">
+    @for (campus of items(); track campus.id) {
+      <li class="cb-card">
+        <p class="font-semibold text-ink">{{ campus.name }}</p>
+      </li>
+    }
+  </ul>
+  <table class="mt-8 hidden w-full border-collapse lg:table">
+    <thead>
+      <tr>
+        <th class="cb-th">Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (campus of items(); track campus.id) {
+        <tr>
+          <td class="cb-td">{{ campus.name }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pager [page]="page()" [pageSize]="pageSize" [totalCount]="totalCount()" (pageChange)="load($event)" />
+}

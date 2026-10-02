@@ -1,0 +1,127 @@
+<h1 class="page-title">Semesters</h1>
+<p class="mt-2 max-w-xl text-base">
+  Create a semester, then open it. A closed semester stays on this list and cannot be changed. Dates use
+  {{ zoneCaption() }}.
+</p>
+
+<form class="mt-6 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label class="cb-label" for="semester-name">Name</label>
+  <input id="semester-name" type="text" formControlName="name" [attr.maxlength]="limits.name" class="cb-input" />
+  @if (form.controls.name.touched && form.controls.name.invalid) {
+    <p class="cb-field-error">Enter a semester name.</p>
+  }
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <label class="cb-label" for="semester-start">Start date</label>
+      <input id="semester-start" type="date" formControlName="startDate" class="cb-input" />
+    </div>
+    <div>
+      <label class="cb-label" for="semester-end">End date</label>
+      <input id="semester-end" type="date" formControlName="endDate" class="cb-input" />
+    </div>
+  </div>
+  @if (form.touched && form.hasError('dateOrder')) {
+    <p class="cb-field-error">The end date must be on or after the start date.</p>
+  }
+  @if (errorMessage()) {
+    <p class="cb-banner" role="alert">{{ errorMessage() }}</p>
+  }
+  <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+    <button type="submit" class="cb-button cb-button-primary cb-button-block" [disabled]="submitting()">
+      {{ submitting() ? 'Please wait…' : editingId() ? 'Save semester' : 'Add semester' }}
+    </button>
+    @if (editingId()) {
+      <button type="button" class="cb-button cb-button-secondary" (click)="cancelEdit()">Cancel</button>
+    }
+  </div>
+</form>
+
+@if (loadError()) {
+  <p class="cb-banner" role="alert">{{ loadError() }}</p>
+} @else if (loading() && items().length === 0) {
+  <p class="mt-8 text-base">Please wait…</p>
+} @else if (items().length === 0) {
+  <p class="mt-8 text-base">No semesters yet.</p>
+} @else {
+  <ul class="mt-8 space-y-3 lg:hidden">
+    @for (semester of items(); track semester.id) {
+      <li class="cb-card">
+        <div class="flex items-start justify-between gap-3">
+          <p class="font-semibold text-ink">{{ semester.name }}</p>
+          <span
+            class="chip"
+            [class.chip-open]="semester.status === 'Open'"
+            [class.chip-draft]="semester.status === 'Draft'"
+            [class.chip-closed]="semester.status === 'Closed'"
+            >{{ semester.status }}</span
+          >
+        </div>
+        <p class="mt-2 text-sm">{{ formatDate(semester.startDate) }} – {{ formatDate(semester.endDate) }}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          @if (semester.status === 'Draft') {
+            <button type="button" class="cb-button cb-button-primary" [disabled]="busyId() === semester.id" (click)="open(semester)">
+              {{ busyId() === semester.id ? 'Please wait…' : 'Open' }}
+            </button>
+          }
+          @if (semester.status === 'Open') {
+            <button type="button" class="cb-button cb-button-secondary" [disabled]="busyId() === semester.id" (click)="close(semester)">
+              {{ busyId() === semester.id ? 'Please wait…' : 'Close' }}
+            </button>
+          }
+          @if (!isClosed(semester)) {
+            <button type="button" class="cb-button cb-button-secondary" (click)="edit(semester)">Edit</button>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+
+  <table class="mt-8 hidden w-full border-collapse lg:table">
+    <thead>
+      <tr>
+        <th class="cb-th">Name</th>
+        <th class="cb-th">Start</th>
+        <th class="cb-th">End</th>
+        <th class="cb-th">Status</th>
+        <th class="cb-th">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (semester of items(); track semester.id) {
+        <tr>
+          <td class="cb-td font-semibold">{{ semester.name }}</td>
+          <td class="cb-td">{{ formatDate(semester.startDate) }}</td>
+          <td class="cb-td">{{ formatDate(semester.endDate) }}</td>
+          <td class="cb-td">
+            <span
+            class="chip"
+            [class.chip-open]="semester.status === 'Open'"
+            [class.chip-draft]="semester.status === 'Draft'"
+            [class.chip-closed]="semester.status === 'Closed'"
+            >{{ semester.status }}</span
+          >
+          </td>
+          <td class="cb-td">
+            <div class="flex flex-wrap gap-2">
+              @if (semester.status === 'Draft') {
+                <button type="button" class="cb-button cb-button-primary" [disabled]="busyId() === semester.id" (click)="open(semester)">
+                  {{ busyId() === semester.id ? 'Please wait…' : 'Open' }}
+                </button>
+              }
+              @if (semester.status === 'Open') {
+                <button type="button" class="cb-button cb-button-secondary" [disabled]="busyId() === semester.id" (click)="close(semester)">
+                  {{ busyId() === semester.id ? 'Please wait…' : 'Close' }}
+                </button>
+              }
+              @if (!isClosed(semester)) {
+                <button type="button" class="cb-button cb-button-secondary" (click)="edit(semester)">Edit</button>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pager [page]="page()" [pageSize]="pageSize" [totalCount]="totalCount()" (pageChange)="load($event)" />
+}

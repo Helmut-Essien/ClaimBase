@@ -2,7 +2,7 @@
 
 Multi-tenant SaaS for universities to calculate lecturer claims from sessions the lecturer logs, with versioned rates and an on-demand PDF. Biometric imports appear on the report as a presence mark. They do not change what is paid.
 
-Product rules live in `.cursor/skills/`. Slice 1 adds sign-in. Courses and claims are later slices.
+Product rules live in `.cursor/skills/`. Slice 2 adds academic setup in the portal: campuses, faculties, semesters, courses, and staff. Claims come later.
 
 ## Layout
 
@@ -50,7 +50,7 @@ On first Development startup the API applies the identity migration and seeds on
 | Finance | `finance@claimbase.test` |
 | Lecturer | `lecturer@claimbase.test` |
 
-A lecturer can sign in to the API and is turned away by the portal with "Use the ClaimBase mobile app". Portal routes are `/login` and an empty `/app` shell.
+A lecturer can sign in to the API and is turned away by the portal with "Use the ClaimBase mobile app". Tenant admins and admins maintain campuses, faculties, semesters, courses, and staff under `/app`. Other portal roles see Home only.
 
 ### 3. Portal
 

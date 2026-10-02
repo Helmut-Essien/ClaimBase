@@ -1,0 +1,265 @@
+<h1 class="page-title">Staff</h1>
+<p class="mt-2 max-w-xl text-base">
+  People who can be claimed, part-time and full-time. A lecturer belongs to at least one department and may belong to more.
+</p>
+
+@if (panel() === 'list') {
+  <button type="button" class="cb-button cb-button-primary cb-button-block mt-6" (click)="startCreate()">Add lecturer</button>
+
+  @if (loadError()) {
+    <p class="cb-banner" role="alert">{{ loadError() }}</p>
+  } @else if (loading() && items().length === 0) {
+    <p class="mt-8 text-base">Please wait…</p>
+  } @else if (items().length === 0) {
+    <p class="mt-8 text-base">No lecturers yet.</p>
+  } @else {
+    <ul class="mt-8 space-y-3 lg:hidden">
+      @for (staff of items(); track staff.id) {
+        <li class="cb-card">
+          <p class="font-semibold text-ink">{{ staff.displayName }}</p>
+          <p class="mt-1 font-mono text-sm">{{ staff.staffNumber }}</p>
+          <p class="mt-1 text-sm">{{ employment(staff.employmentType) }}</p>
+          <ul class="mt-2 space-y-1 text-sm text-muted">
+            @for (department of staff.departments; track department.departmentId) {
+              <li>{{ department.campusName }} · {{ department.facultyName }} · {{ department.departmentName }}</li>
+            }
+          </ul>
+          <button type="button" class="cb-button cb-button-secondary mt-3" (click)="startEdit(staff)">Edit</button>
+        </li>
+      }
+    </ul>
+    <table class="mt-8 hidden w-full border-collapse lg:table">
+      <thead>
+        <tr>
+          <th class="cb-th">Name</th>
+          <th class="cb-th">Number</th>
+          <th class="cb-th">Employment</th>
+          <th class="cb-th">Departments</th>
+          <th class="cb-th"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (staff of items(); track staff.id) {
+          <tr>
+            <td class="cb-td font-semibold">{{ staff.displayName }}</td>
+            <td class="cb-td font-mono">{{ staff.staffNumber }}</td>
+            <td class="cb-td">{{ employment(staff.employmentType) }}</td>
+            <td class="cb-td">
+              @for (department of staff.departments; track department.departmentId) {
+                <p>{{ department.campusName }} · {{ department.facultyName }} · {{ department.departmentName }}</p>
+              }
+            </td>
+            <td class="cb-td">
+              <button type="button" class="cb-button cb-button-secondary" (click)="startEdit(staff)">Edit</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager [page]="page()" [pageSize]="pageSize" [totalCount]="totalCount()" (pageChange)="load($event)" />
+  }
+
+  <section class="mt-12 max-w-xl">
+    <h2 class="text-lg font-semibold text-ink">Position titles</h2>
+    <p class="mt-2 text-base">
+      Shared catalog for every lecturer. Adding a title does not assign it to anyone. An appointment is recorded on the lecturer.
+    </p>
+    <form class="mt-4" [formGroup]="titleForm" (ngSubmit)="submitTitle()" novalidate>
+      <label class="cb-label" for="title-name">Title</label>
+      <input id="title-name" type="text" formControlName="name" [attr.maxlength]="limits.shortName" class="cb-input" />
+      @if (titleForm.controls.name.touched && titleForm.controls.name.invalid) {
+        <p class="cb-field-error">Enter a title.</p>
+      }
+      @if (titleError()) {
+        <p class="cb-banner" role="alert">{{ titleError() }}</p>
+      }
+      <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingTitle()">
+        {{ submittingTitle() ? 'Please wait…' : 'Add title' }}
+      </button>
+    </form>
+    @if (titles().length === 0) {
+      <p class="mt-6 text-base">No position titles yet.</p>
+    } @else {
+      <ul class="mt-6 space-y-2">
+        @for (title of titles(); track title.id) {
+          <li class="cb-card">{{ title.name }}</li>
+        }
+      </ul>
+    }
+    @if (titlesTruncated()) {
+      <p class="mt-3 text-sm text-muted">Showing the first {{ lookupSize }} titles.</p>
+    }
+  </section>
+} @else {
+  <button type="button" class="mt-4 inline-flex h-11 items-center font-semibold text-ink" (click)="cancel()">Back to staff</button>
+
+  <form class="mt-4 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label class="cb-label" for="staff-number">Staff number</label>
+    <input
+      id="staff-number"
+      type="text"
+      formControlName="staffNumber"
+      [attr.maxlength]="limits.staffNumber"
+      class="cb-input font-mono"
+    />
+    @if (form.controls.staffNumber.touched && form.controls.staffNumber.invalid) {
+      <p class="cb-field-error">Enter a staff number.</p>
+    }
+
+    <label class="cb-label" for="staff-name">Name</label>
+    <input id="staff-name" type="text" formControlName="displayName" [attr.maxlength]="limits.name" class="cb-input" />
+    @if (form.controls.displayName.touched && form.controls.displayName.invalid) {
+      <p class="cb-field-error">Enter a name.</p>
+    }
+
+    <label class="cb-label" for="staff-email">Email</label>
+    <input id="staff-email" type="email" formControlName="email" [attr.maxlength]="limits.email" class="cb-input" />
+    @if (form.controls.email.touched && form.controls.email.invalid) {
+      <p class="cb-field-error">Enter a valid email, or leave it blank.</p>
+    }
+
+    <label class="cb-label" for="staff-employment">Employment</label>
+    <select id="staff-employment" formControlName="employmentType" class="cb-input">
+      <option value="PartTime">Part-time</option>
+      <option value="FullTime">Full-time</option>
+    </select>
+    <!-- Part-time and full-time are both claimed. This choice is a label, not a pay filter. -->
+    <p class="mt-2 text-sm text-muted">Part-time and full-time lecturers are both included.</p>
+
+    <label class="cb-label" for="staff-biometric">Biometric id</label>
+    <input
+      id="staff-biometric"
+      type="text"
+      formControlName="biometricId"
+      [attr.maxlength]="limits.biometricId"
+      class="cb-input font-mono"
+    />
+    <p class="mt-2 text-sm text-muted">The id on the biometric device. Leave blank if this lecturer has none.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-ink">Departments</h2>
+    <p class="mt-2 text-sm text-muted">At least one. More than one is allowed, including departments on different campuses.</p>
+
+    @if (campuses().length === 0) {
+      <p class="mt-4 text-base">
+        No campuses yet.
+        <a class="font-semibold text-ink underline" routerLink="/app/campuses">Add a campus</a>
+        and a department before assigning this lecturer.
+      </p>
+    } @else {
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <div>
+          <label class="cb-label" for="assign-campus">Campus</label>
+          <select id="assign-campus" formControlName="campusId" class="cb-input">
+            @for (campus of campuses(); track campus.id) {
+              <option [value]="campus.id">{{ campus.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="cb-label" for="assign-faculty">Faculty</label>
+          <select id="assign-faculty" formControlName="facultyId" class="cb-input">
+            @for (faculty of faculties(); track faculty.id) {
+              <option [value]="faculty.id">{{ faculty.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="cb-label" for="assign-department">Department</label>
+          <select id="assign-department" formControlName="departmentId" class="cb-input">
+            @for (department of departments(); track department.id) {
+              <option [value]="department.id">{{ department.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <button type="button" class="cb-button cb-button-secondary mt-4" (click)="addDepartment()">Add department</button>
+    }
+
+    @if (departmentError()) {
+      <p class="cb-banner" role="alert">{{ departmentError() }}</p>
+    }
+
+    <ul class="mt-4 space-y-2">
+      @for (department of assignedDepartments(); track department.departmentId) {
+        <li class="cb-card flex items-center justify-between gap-3">
+          <p>{{ department.campusName }} · {{ department.facultyName }} · {{ department.departmentName }}</p>
+          <button
+            type="button"
+            class="cb-button cb-button-secondary"
+            [disabled]="assignedDepartments().length <= 1"
+            (click)="removeDepartment(department)"
+          >
+            Remove
+          </button>
+        </li>
+      }
+    </ul>
+    @if (assignedDepartments().length === 1) {
+      <p class="mt-2 text-sm text-muted">The last department stays. A lecturer is always assigned to at least one.</p>
+    }
+
+    @if (errorMessage()) {
+      <p class="cb-banner" role="alert">{{ errorMessage() }}</p>
+    }
+
+    <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submitting()">
+      {{ submitting() ? 'Please wait…' : panel() === 'create' ? 'Save lecturer' : 'Save changes' }}
+    </button>
+  </form>
+
+  @if (panel() === 'edit') {
+    <form class="mt-10 max-w-xl" [formGroup]="positionForm" (ngSubmit)="submitPosition()" novalidate>
+      <h2 class="text-lg font-semibold text-ink">Position appointments</h2>
+      <p class="mt-2 text-sm text-muted">
+        This is the only place a person is given a position. The end date is the first day not included. Leave it empty
+        while the appointment continues. Dates use {{ zoneCaption() }}.
+      </p>
+      @if (titles().length === 0) {
+        <p class="mt-4 text-base">Add a position title on the staff list first. Adding a title does not appoint this lecturer.</p>
+      } @else {
+        <label class="cb-label" for="position-title">Title</label>
+        <select id="position-title" formControlName="positionTitleId" class="cb-input">
+          @for (title of titles(); track title.id) {
+            <option [value]="title.id">{{ title.name }}</option>
+          }
+        </select>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label class="cb-label" for="position-from">Effective from</label>
+            <input id="position-from" type="date" formControlName="effectiveFrom" class="cb-input" />
+          </div>
+          <div>
+            <label class="cb-label" for="position-to">Effective to</label>
+            <input id="position-to" type="date" formControlName="effectiveTo" class="cb-input" />
+          </div>
+        </div>
+        @if (positionForm.touched && positionForm.hasError('dateOrder')) {
+          <p class="cb-field-error">The end date must be after the start date. It is the first day not included.</p>
+        }
+        @if (positionError()) {
+          <p class="cb-banner" role="alert">{{ positionError() }}</p>
+        }
+        <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingPosition()">
+          {{ submittingPosition() ? 'Please wait…' : 'Add appointment' }}
+        </button>
+      }
+
+      @if (positions().length === 0) {
+        <p class="mt-6 text-base">No appointments yet.</p>
+      } @else {
+        <ul class="mt-6 space-y-3">
+          @for (position of positions(); track position.id) {
+            <li class="cb-card">
+              <p class="font-semibold text-ink">{{ position.positionTitleName }}</p>
+              <p class="mt-1 text-sm">
+                {{ formatDate(position.effectiveFrom) }}
+                –
+                {{ position.effectiveTo ? formatDate(position.effectiveTo) + ' (first day excluded)' : 'open-ended' }}
+              </p>
+            </li>
+          }
+        </ul>
+      }
+    </form>
+  }
+}

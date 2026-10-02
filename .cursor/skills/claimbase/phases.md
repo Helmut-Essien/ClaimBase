@@ -10,7 +10,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 |-------|-------|--------|
 | 0 | Scaffold: `ClaimBase.sln`, Clean Architecture, Portal, MAUI shell, Docker Postgres, README run steps | **Done** |
 | 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | **Done** |
-| 2 | Academic setup: campuses, faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **API done, portal deferred** |
+| 2 | Academic setup: campuses, faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **Done** |
 | 3 | Rates: hourly rank × qualification matrix and tenant transport rate, dated so they carry into later semesters | Planned |
 | 4 | Session logs: API semester gate, Portal list, MAUI offline log + sync | Planned |
 | 5 | Claims: builder, snapshots, HoD then Finance approval, Portal review | Planned |
@@ -43,7 +43,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 - A faculty belongs to one campus. Faculty names are unique on that campus. A faculty owns its departments. Department names are unique inside the faculty.
 - Staff have `PartTime` or `FullTime`, at least one department assignment, an optional `BiometricId` equal to the id on the biometric device when the lecturer has one, and an optional lecturer user. A lecturer may belong to more than one department.
 - Each position appointment is a child of that staff member: title, effective from, effective to. Overlapping ranges for the same lecturer are rejected. There is no position screen that is not the staff member's record.
-- Portal screens for these setups, with `*_FIELD_LIMITS`. Not built yet. The API is in place; the portal and mobile app come later.
+- Portal screens for these setups, with `*_FIELD_LIMITS`. The lecturer app is a later slice.
 
 ## Slice 3 acceptance
 

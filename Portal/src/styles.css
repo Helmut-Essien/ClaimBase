@@ -9,6 +9,10 @@
   --color-paper: #f4f1ea;
   --color-paper-border: #e4ddd2;
   --color-slate: #1c1917;
+  --color-success: #2f6f4e;
+  --color-warning: #a16207;
+  --color-error: #b91c1c;
+  --color-muted: #64748b;
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -16,4 +20,177 @@
 .brand-grain {
   background-image: radial-gradient(rgb(255 255 255 / 0.07) 0.6px, transparent 0.6px);
   background-size: 4px 4px;
+}
+
+/* headline-lg: page titles stay at 28px even when a phone width would shrink a utility scale. */
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 2.25rem;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+/* Inactive nav is muted. The active route is ink on both the bottom nav and the sidebar. */
+.nav-link {
+  color: var(--color-muted);
+}
+
+.nav-link.nav-active {
+  color: var(--color-ink);
+}
+
+/* 44px controls. Focus uses ink so forms match the ledger rather than the browser accent. */
+.cb-label {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.cb-input {
+  margin-top: 0.5rem;
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-paper-border);
+  background: #fff;
+  padding-inline: 0.75rem;
+  font-size: 1rem;
+  color: var(--color-slate);
+}
+
+.cb-input:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.cb-field-error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-error);
+}
+
+.cb-button {
+  display: inline-flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  padding-inline: 1rem;
+  font-weight: 600;
+}
+
+.cb-button:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.cb-button:disabled {
+  opacity: 0.6;
+}
+
+.cb-button-primary {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.cb-button-secondary {
+  border: 1px solid var(--color-ink);
+  background: #fff;
+  color: var(--color-ink);
+}
+
+/* Page actions span the phone width, then shrink to the label. */
+.cb-button-block {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .cb-button-block {
+    width: auto;
+  }
+}
+
+/* Cards are white on the paper page. The shadow is ink-tinted, not a grey drop. */
+.cb-card {
+  border-radius: 0.625rem;
+  border: 1px solid var(--color-paper-border);
+  background: #fff;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgb(27 58 75 / 0.08);
+}
+
+.cb-banner {
+  margin-top: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, white);
+  background: color-mix(in srgb, var(--color-error) 10%, white);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-error);
+}
+
+.cb-th {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-paper-border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--color-muted);
+}
+
+.cb-td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-paper-border);
+  font-size: 0.875rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chip-open {
+  background: color-mix(in srgb, var(--color-success) 12%, white);
+  color: var(--color-success);
+}
+
+.chip-draft {
+  background: var(--color-paper);
+  color: var(--color-slate);
+}
+
+.chip-closed {
+  background: var(--color-paper);
+  color: var(--color-muted);
+}
+
+/* Filter chips scroll on a phone. The pressed chip is ink so the campus filter is obvious. */
+.chip-filter {
+  display: inline-flex;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-paper-border);
+  background: #fff;
+  padding-inline: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.chip-filter[aria-pressed='true'] {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
 }

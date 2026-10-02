@@ -1,6 +1,7 @@
 <div class="min-h-dvh bg-paper text-slate">
+  <!-- Phones keep a top bar. The sidebar replaces it from lg, so landscape phones still use this bar. -->
   <header
-    class="flex h-14 items-center justify-between gap-3 bg-ink px-4 text-paper pt-[env(safe-area-inset-top)]"
+    class="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 bg-ink px-4 pt-[env(safe-area-inset-top)] text-paper lg:hidden"
   >
     <p class="font-semibold tracking-tight">ClaimBase</p>
     <p class="min-w-0 flex-1 truncate text-center text-sm">{{ tenantName() }}</p>
@@ -13,17 +14,53 @@
     </button>
   </header>
 
-  <div class="lg:grid lg:grid-cols-[16rem_1fr]">
-    <nav class="flex border-b border-paper-border px-4 lg:block lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
-      <a
-        routerLink="/app"
-        class="inline-flex h-11 items-center font-semibold text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-      >
-        Home
-      </a>
+  <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-paper-border bg-white lg:flex">
+    <div class="border-b border-paper-border px-4 py-6">
+      <p class="font-semibold tracking-tight text-ink">ClaimBase</p>
+      <p class="mt-2 truncate text-sm text-muted">{{ tenantName() }}</p>
+    </div>
+    <nav class="flex flex-1 flex-col gap-1 px-3 py-4">
+      @for (link of links(); track link.path) {
+        <a
+          class="nav-link inline-flex h-11 items-center rounded-md px-3 text-sm font-semibold"
+          [routerLink]="link.path"
+          routerLinkActive="nav-active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          ariaCurrentWhenActive="page"
+          >{{ link.label }}</a
+        >
+      }
     </nav>
-    <main class="px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <button
+      type="button"
+      class="m-3 inline-flex h-11 items-center px-3 text-sm font-semibold text-ink"
+      (click)="signOut()"
+    >
+      Sign out
+    </button>
+  </aside>
+
+  <!-- Bottom nav stays until lg. Content padding includes this bar and the home-indicator inset. -->
+  <nav
+    class="fixed inset-x-0 bottom-0 z-30 border-t border-paper-border bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+  >
+    <div class="flex gap-1 overflow-x-auto px-2">
+      @for (link of links(); track link.path) {
+        <a
+          class="nav-link inline-flex h-11 shrink-0 items-center px-3 text-sm font-semibold"
+          [routerLink]="link.path"
+          routerLinkActive="nav-active"
+          [routerLinkActiveOptions]="{ exact: link.exact }"
+          ariaCurrentWhenActive="page"
+          >{{ link.label }}</a
+        >
+      }
+    </div>
+  </nav>
+
+  <main class="px-4 py-6 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-8">
+    <div class="mx-auto max-w-[1280px]">
       <router-outlet />
-    </main>
-  </div>
+    </div>
+  </main>
 </div>
