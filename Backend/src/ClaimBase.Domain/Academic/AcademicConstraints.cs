@@ -3,7 +3,7 @@ namespace ClaimBase.Domain.Academic;
 /// <summary>Column bounds for academic setup. Portal field limits must match these when that screen is built.</summary>
 public static class AcademicConstraints
 {
-    /// <summary>Faculty, department, semester, course, and staff display names.</summary>
+    /// <summary>Campus, faculty, department, semester, course, and staff display names.</summary>
     public const int NameMaxLength = 200;
 
     /// <summary>Qualification name.</summary>

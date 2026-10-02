@@ -10,10 +10,11 @@ using MediatR;
 
 namespace ClaimBase.Application.Features.Faculties;
 
-/// <summary>Lists faculties.</summary>
+/// <summary>Lists faculties. <paramref name="CampusId"/> limits the page to one campus.</summary>
 /// <param name="Page">1-based page.</param>
 /// <param name="PageSize">Page size, 1 to 100.</param>
-public sealed record ListFacultiesQuery(int Page, int PageSize) : IRequest<PagedResult<FacultyResponse>>;
+/// <param name="CampusId">Optional campus filter.</param>
+public sealed record ListFacultiesQuery(int Page, int PageSize, string? CampusId) : IRequest<PagedResult<FacultyResponse>>;
 
 /// <summary>Validates faculty list paging.</summary>
 public sealed class ListFacultiesQueryValidator : AbstractValidator<ListFacultiesQuery>
@@ -23,6 +24,7 @@ public sealed class ListFacultiesQueryValidator : AbstractValidator<ListFacultie
     {
         RuleFor(query => query.Page).GreaterThanOrEqualTo(1);
         RuleFor(query => query.PageSize).InclusiveBetween(1, PageLimits.MaxSize);
+        RuleFor(query => query.CampusId).MaximumLength(UserConstraints.IdMaxLength);
     }
 }
 
@@ -45,25 +47,27 @@ public sealed class ListFacultiesQueryHandler : IRequestHandler<ListFacultiesQue
     public async Task<PagedResult<FacultyResponse>> Handle(ListFacultiesQuery request, CancellationToken cancellationToken)
     {
         await _access.EnsureAsync(cancellationToken);
-        return await _catalog.ListFacultiesAsync(request.Page, request.PageSize, cancellationToken);
+        return await _catalog.ListFacultiesAsync(request.Page, request.PageSize, request.CampusId, cancellationToken);
     }
 }
 
-/// <summary>Creates a faculty.</summary>
+/// <summary>Creates a faculty on a campus.</summary>
+/// <param name="CampusId">Parent campus.</param>
 /// <param name="Name">Faculty name.</param>
-public sealed record CreateFacultyCommand(string Name) : IRequest<FacultyResponse>;
+public sealed record CreateFacultyCommand(string CampusId, string Name) : IRequest<FacultyResponse>;
 
-/// <summary>Validates a faculty name.</summary>
+/// <summary>Validates a faculty and its campus.</summary>
 public sealed class CreateFacultyCommandValidator : AbstractValidator<CreateFacultyCommand>
 {
     /// <summary>Creates the name rules.</summary>
     public CreateFacultyCommandValidator()
     {
+        RuleFor(command => command.CampusId).NotEmpty().MaximumLength(UserConstraints.IdMaxLength);
         RuleFor(command => command.Name).NotEmpty().MaximumLength(AcademicConstraints.NameMaxLength);
     }
 }
 
-/// <summary>Creates a faculty when the name is not already used.</summary>
+/// <summary>Creates a faculty when the name is free on that campus.</summary>
 public sealed class CreateFacultyCommandHandler : IRequestHandler<CreateFacultyCommand, FacultyResponse>
 {
     private readonly ISetupAccess _access;
@@ -85,12 +89,23 @@ public sealed class CreateFacultyCommandHandler : IRequestHandler<CreateFacultyC
     public async Task<FacultyResponse> Handle(CreateFacultyCommand request, CancellationToken cancellationToken)
     {
         await _access.EnsureAsync(cancellationToken);
-        if (await _catalog.FacultyNameTakenAsync(request.Name, cancellationToken))
-            throw new ConflictAppException("A faculty with that name already exists.");
+        var campus = await _catalog.GetCampusAsync(request.CampusId, cancellationToken);
+        if (campus is null)
+            throw new NotFoundAppException("Campus was not found.");
 
-        var faculty = Faculty.Create(EntityIds.New(), _current.TenantId, request.Name);
+        // The same faculty name may exist on another campus. Uniqueness is per campus.
+        if (await _catalog.FacultyNameTakenAsync(request.CampusId, request.Name, cancellationToken))
+            throw new ConflictAppException("A faculty with that name already exists on this campus.");
+
+        var faculty = Faculty.Create(EntityIds.New(), _current.TenantId, campus.Id, request.Name);
         _catalog.Add(faculty);
         await _catalog.SaveChangesAsync(cancellationToken);
-        return new FacultyResponse { Id = faculty.Id, Name = faculty.Name };
+        return new FacultyResponse
+        {
+            Id = faculty.Id,
+            CampusId = campus.Id,
+            CampusName = campus.Name,
+            Name = faculty.Name
+        };
     }
 }

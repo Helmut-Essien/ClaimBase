@@ -2,11 +2,36 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ClaimBase.Shared.Academic;
 
-/// <summary>Faculty row.</summary>
+/// <summary>Campus row.</summary>
+public sealed class CampusResponse
+{
+    /// <summary>Campus id.</summary>
+    public required string Id { get; init; }
+
+    /// <summary>Campus name.</summary>
+    public required string Name { get; init; }
+}
+
+/// <summary>Body for <c>POST /api/campuses</c>.</summary>
+public sealed class CreateCampusRequest
+{
+    /// <summary>Campus name, unique in the tenant.</summary>
+    [Required]
+    [MaxLength(AcademicFieldLimits.Name)]
+    public string Name { get; init; } = "";
+}
+
+/// <summary>Faculty row, including its campus.</summary>
 public sealed class FacultyResponse
 {
     /// <summary>Faculty id.</summary>
     public required string Id { get; init; }
+
+    /// <summary>Campus id.</summary>
+    public required string CampusId { get; init; }
+
+    /// <summary>Campus name.</summary>
+    public required string CampusName { get; init; }
 
     /// <summary>Faculty name.</summary>
     public required string Name { get; init; }
@@ -15,17 +40,28 @@ public sealed class FacultyResponse
 /// <summary>Body for <c>POST /api/faculties</c>.</summary>
 public sealed class CreateFacultyRequest
 {
-    /// <summary>Faculty name, unique in the tenant.</summary>
+    /// <summary>Parent campus.</summary>
+    [Required]
+    [MaxLength(26)]
+    public string CampusId { get; init; } = "";
+
+    /// <summary>Faculty name, unique on the campus.</summary>
     [Required]
     [MaxLength(AcademicFieldLimits.Name)]
     public string Name { get; init; } = "";
 }
 
-/// <summary>Department row, including its faculty.</summary>
+/// <summary>Department row, including its campus and faculty.</summary>
 public sealed class DepartmentResponse
 {
     /// <summary>Department id.</summary>
     public required string Id { get; init; }
+
+    /// <summary>Campus id.</summary>
+    public required string CampusId { get; init; }
+
+    /// <summary>Campus name.</summary>
+    public required string CampusName { get; init; }
 
     /// <summary>Faculty id.</summary>
     public required string FacultyId { get; init; }
@@ -209,7 +245,7 @@ public sealed class UpdateCourseRequest
     public string QualificationId { get; init; } = "";
 }
 
-/// <summary>A department assignment shown with its faculty.</summary>
+/// <summary>A department assignment shown with its campus and faculty.</summary>
 public sealed class StaffDepartmentResponse
 {
     /// <summary>Department id.</summary>
@@ -217,6 +253,12 @@ public sealed class StaffDepartmentResponse
 
     /// <summary>Department name.</summary>
     public required string DepartmentName { get; init; }
+
+    /// <summary>Campus id.</summary>
+    public required string CampusId { get; init; }
+
+    /// <summary>Campus name.</summary>
+    public required string CampusName { get; init; }
 
     /// <summary>Faculty id.</summary>
     public required string FacultyId { get; init; }

@@ -36,6 +36,7 @@ Cross-tenant resource ids are 404.
 |--------|-------|-------|-------|
 | POST | `/api/auth/login` | Anonymous | 1 |
 | GET | `/api/auth/me` | JWT | 1 |
+| GET/POST | `/api/campuses` | TenantAdmin, Admin | 2 |
 | GET/POST | `/api/faculties` | TenantAdmin, Admin | 2 |
 | GET/POST | `/api/departments` | TenantAdmin, Admin | 2 |
 | POST | `/api/staff/{id}/departments` | TenantAdmin, Admin | 2 |
@@ -80,7 +81,9 @@ Money is `numeric(18,2)` and ≥ 0. Instants are UTC. A "day" is the calendar da
 
 **User:** Id, TenantId, Email (unique per tenant, lowercase, ≤320), DisplayName (≤200), PasswordHash, Role, DepartmentId? (required for HoD), StaffId? (required for Lecturer), CreatedAt
 
-**Faculty:** Id, TenantId, Name (≤200, unique per tenant)
+**Campus:** Id, TenantId, Name (≤200, unique per tenant). A campus does not own semesters or rates.
+
+**Faculty:** Id, TenantId, CampusId, Name (≤200, unique per campus)
 
 **Department:** Id, TenantId, FacultyId, Name (≤200, unique within the faculty)
 
@@ -110,7 +113,7 @@ Money is `numeric(18,2)` and ≥ 0. Instants are UTC. A "day" is the calendar da
 
 **Claim:** Id, TenantId, SemesterId, StaffId, CurrencyCode snapshot, Status (`Draft` \| `PendingHod` \| `PendingFinance` \| `Approved` \| `Rejected`), CreatedAt. One live claim per (TenantId, SemesterId, StaffId).
 
-**ClaimDepartment:** Id, TenantId, ClaimId, FacultyName (≤200), DepartmentName (≤200). Copied from the lecturer's assignments when the claim is built. The PDF reads this snapshot. Later assignment changes do not rewrite it.
+**ClaimDepartment:** Id, TenantId, ClaimId, CampusName (≤200), FacultyName (≤200), DepartmentName (≤200). Copied from the lecturer's assignments when the claim is built. The PDF reads this snapshot. Later assignment changes do not rewrite it.
 
 **ClaimLine:** Id, TenantId, ClaimId, LineType (`Teaching` \| `Transport`), SessionLogId? (teaching), TeachingDate, CourseCode?, QualificationName?, PositionName?, RateAmount, Quantity, Amount, StartsAt?, EndsAt?, BiometricPresent, EmploymentType snapshot
 
@@ -151,7 +154,7 @@ When adding a writable field, complete every applicable layer in the same slice.
 |-------|-----|--------|
 | Email | 320 | Lowercase |
 | Password | 128 | Min 8 |
-| DisplayName / Tenant / Department / Semester / Course name | 200 | Trimmed |
+| DisplayName / Tenant / Campus / Faculty / Department / Semester / Course name | 200 | Trimmed |
 | Qualification / Position name | 80 | |
 | Course code | 32 | Uppercase |
 | StaffNumber | 32 | |
@@ -187,7 +190,7 @@ Portal/src/app/
     pipes/            # money pipe using tenant currency
     validators/
   features/
-    academic/         # faculties, departments, semesters, courses, qualifications
+    academic/         # campuses, faculties, departments, semesters, courses, qualifications
     staff/            # lecturer plus their position records
     rates/
     sessions/
@@ -203,7 +206,7 @@ Portal/src/app/
 |------|-------|-------|
 | `/login` | guest | 1 |
 | `/app` | auth, not Lecturer | 1 |
-| `/app/faculties`, `/app/semesters`, `/app/courses`, `/app/staff` | Admin, TenantAdmin | 2 |
+| `/app/campuses`, `/app/faculties`, `/app/semesters`, `/app/courses`, `/app/staff` | Admin, TenantAdmin | 2 |
 | `/app/rates` | Admin, TenantAdmin | 3 |
 | `/app/sessions` | Admin, TenantAdmin, HoD, Finance | 4 |
 | `/app/claims`, `/app/claims/:id` | HoD, Finance, Admin, TenantAdmin | 5 |

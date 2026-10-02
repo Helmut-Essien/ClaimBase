@@ -109,6 +109,8 @@ cd Portal && npm run build
 
 ## Product rules
 
+- A campus owns its faculties. A faculty owns its departments. Faculty names are unique on a campus, so two campuses may each have a Faculty of Science.
+- Rates and semesters belong to the university, not to a campus.
 - A semester must be open before a lecturer can log a session.
 - Lecturers enter course code, start, and end. There is no timetable import.
 - Teaching pay is one flat rate per session: lecturer position on that date × course qualification.

@@ -1,3 +1,4 @@
+using ClaimBase.Application.Features.Campuses;
 using ClaimBase.Application.Features.Courses;
 using ClaimBase.Application.Features.Departments;
 using ClaimBase.Application.Features.Faculties;
@@ -11,6 +12,48 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClaimBase.Api.Controllers;
+
+/// <summary>Campus setup. Tenant admin and admin only. The role is checked from the database.</summary>
+[ApiController]
+[Authorize]
+[Route("api/campuses")]
+public sealed class CampusesController : ControllerBase
+{
+    private readonly ISender _sender;
+
+    /// <summary>Creates the controller.</summary>
+    /// <param name="sender">MediatR sender.</param>
+    public CampusesController(ISender sender)
+    {
+        ArgumentNullException.ThrowIfNull(sender);
+        _sender = sender;
+    }
+
+    /// <summary>Lists campuses.</summary>
+    /// <param name="page">1-based page.</param>
+    /// <param name="pageSize">Page size, 1 to 100.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>One page of campuses.</returns>
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<CampusResponse>>> List(
+        [FromQuery] int page = PageLimits.DefaultPage,
+        [FromQuery] int pageSize = PageLimits.DefaultSize,
+        CancellationToken cancellationToken = default)
+    {
+        return Ok(await _sender.Send(new ListCampusesQuery(page, pageSize), cancellationToken));
+    }
+
+    /// <summary>Creates a campus.</summary>
+    /// <param name="request">Campus name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The new campus.</returns>
+    [HttpPost]
+    public async Task<ActionResult<CampusResponse>> Create([FromBody] CreateCampusRequest request, CancellationToken cancellationToken)
+    {
+        var created = await _sender.Send(new CreateCampusCommand(request.Name), cancellationToken);
+        return Created("/api/campuses", created);
+    }
+}
 
 /// <summary>Faculty setup. Tenant admin and admin only. The role is checked from the database.</summary>
 [ApiController]
@@ -31,25 +74,27 @@ public sealed class FacultiesController : ControllerBase
     /// <summary>Lists faculties.</summary>
     /// <param name="page">1-based page.</param>
     /// <param name="pageSize">Page size, 1 to 100.</param>
+    /// <param name="campusId">Optional campus filter.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>One page of faculties.</returns>
     [HttpGet]
     public async Task<ActionResult<PagedResult<FacultyResponse>>> List(
         [FromQuery] int page = PageLimits.DefaultPage,
         [FromQuery] int pageSize = PageLimits.DefaultSize,
+        [FromQuery] string? campusId = null,
         CancellationToken cancellationToken = default)
     {
-        return Ok(await _sender.Send(new ListFacultiesQuery(page, pageSize), cancellationToken));
+        return Ok(await _sender.Send(new ListFacultiesQuery(page, pageSize, campusId), cancellationToken));
     }
 
     /// <summary>Creates a faculty.</summary>
-    /// <param name="request">Faculty name.</param>
+    /// <param name="request">Campus and faculty name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The new faculty.</returns>
     [HttpPost]
     public async Task<ActionResult<FacultyResponse>> Create([FromBody] CreateFacultyRequest request, CancellationToken cancellationToken)
     {
-        var created = await _sender.Send(new CreateFacultyCommand(request.Name), cancellationToken);
+        var created = await _sender.Send(new CreateFacultyCommand(request.CampusId, request.Name), cancellationToken);
         return Created("/api/faculties", created);
     }
 }

@@ -25,22 +25,67 @@ public sealed class EfAcademicCatalog : IAcademicCatalog
     }
 
     /// <inheritdoc />
-    public Task<PagedResult<FacultyResponse>> ListFacultiesAsync(int page, int pageSize, CancellationToken cancellationToken) =>
+    public Task<PagedResult<CampusResponse>> ListCampusesAsync(int page, int pageSize, CancellationToken cancellationToken) =>
         PageAsync(
-            _db.Faculties.AsNoTracking().OrderBy(faculty => faculty.Name).Select(faculty => new FacultyResponse
+            _db.Campuses.AsNoTracking().OrderBy(campus => campus.Name).Select(campus => new CampusResponse
             {
-                Id = faculty.Id,
-                Name = faculty.Name
+                Id = campus.Id,
+                Name = campus.Name
             }),
             page,
             pageSize,
             cancellationToken);
 
     /// <inheritdoc />
-    public Task<bool> FacultyNameTakenAsync(string name, CancellationToken cancellationToken)
+    public Task<bool> CampusNameTakenAsync(string name, CancellationToken cancellationToken)
     {
         var key = name.Trim().ToLowerInvariant();
-        return _db.Faculties.AnyAsync(faculty => faculty.Name.ToLower() == key, cancellationToken);
+        return _db.Campuses.AnyAsync(campus => campus.Name.ToLower() == key, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<CampusResponse?> GetCampusAsync(string campusId, CancellationToken cancellationToken) =>
+        _db.Campuses.AsNoTracking()
+            .Where(campus => campus.Id == campusId)
+            .Select(campus => new CampusResponse { Id = campus.Id, Name = campus.Name })
+            .FirstOrDefaultAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public void Add(Campus campus) => _db.Campuses.Add(campus);
+
+    /// <inheritdoc />
+    public Task<PagedResult<FacultyResponse>> ListFacultiesAsync(
+        int page,
+        int pageSize,
+        string? campusId,
+        CancellationToken cancellationToken)
+    {
+        var faculties = _db.Faculties.AsNoTracking().AsQueryable();
+        if (campusId is not null)
+            faculties = faculties.Where(faculty => faculty.CampusId == campusId);
+
+        var query =
+            from faculty in faculties
+            join campus in _db.Campuses.AsNoTracking() on faculty.CampusId equals campus.Id
+            orderby campus.Name, faculty.Name
+            select new FacultyResponse
+            {
+                Id = faculty.Id,
+                CampusId = campus.Id,
+                CampusName = campus.Name,
+                Name = faculty.Name
+            };
+
+        return PageAsync(query, page, pageSize, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> FacultyNameTakenAsync(string campusId, string name, CancellationToken cancellationToken)
+    {
+        var key = name.Trim().ToLowerInvariant();
+        return _db.Faculties.AnyAsync(
+            faculty => faculty.CampusId == campusId && faculty.Name.ToLower() == key,
+            cancellationToken);
     }
 
     /// <inheritdoc />
@@ -60,10 +105,13 @@ public sealed class EfAcademicCatalog : IAcademicCatalog
         var query =
             from department in departments
             join faculty in _db.Faculties.AsNoTracking() on department.FacultyId equals faculty.Id
-            orderby faculty.Name, department.Name
+            join campus in _db.Campuses.AsNoTracking() on faculty.CampusId equals campus.Id
+            orderby campus.Name, faculty.Name, department.Name
             select new DepartmentResponse
             {
                 Id = department.Id,
+                CampusId = campus.Id,
+                CampusName = campus.Name,
                 FacultyId = faculty.Id,
                 FacultyName = faculty.Name,
                 Name = department.Name
@@ -95,10 +143,13 @@ public sealed class EfAcademicCatalog : IAcademicCatalog
         var query =
             from department in _db.Departments.AsNoTracking()
             join faculty in _db.Faculties.AsNoTracking() on department.FacultyId equals faculty.Id
+            join campus in _db.Campuses.AsNoTracking() on faculty.CampusId equals campus.Id
             where department.Id == departmentId
             select new DepartmentResponse
             {
                 Id = department.Id,
+                CampusId = campus.Id,
+                CampusName = campus.Name,
                 FacultyId = faculty.Id,
                 FacultyName = faculty.Name,
                 Name = department.Name
@@ -368,11 +419,14 @@ public sealed class EfAcademicCatalog : IAcademicCatalog
             from assignment in _db.StaffDepartments.AsNoTracking()
             join department in _db.Departments.AsNoTracking() on assignment.DepartmentId equals department.Id
             join faculty in _db.Faculties.AsNoTracking() on department.FacultyId equals faculty.Id
+            join campus in _db.Campuses.AsNoTracking() on faculty.CampusId equals campus.Id
             where ids.Contains(assignment.StaffId)
             select new DepartmentRow(
                 assignment.StaffId,
                 department.Id,
                 department.Name,
+                campus.Id,
+                campus.Name,
                 faculty.Id,
                 faculty.Name)).ToListAsync(cancellationToken);
 
@@ -417,12 +471,21 @@ public sealed class EfAcademicCatalog : IAcademicCatalog
         };
     }
 
-    private sealed record DepartmentRow(string StaffId, string DepartmentId, string DepartmentName, string FacultyId, string FacultyName)
+    private sealed record DepartmentRow(
+        string StaffId,
+        string DepartmentId,
+        string DepartmentName,
+        string CampusId,
+        string CampusName,
+        string FacultyId,
+        string FacultyName)
     {
         public StaffDepartmentResponse Response => new()
         {
             DepartmentId = DepartmentId,
             DepartmentName = DepartmentName,
+            CampusId = CampusId,
+            CampusName = CampusName,
             FacultyId = FacultyId,
             FacultyName = FacultyName
         };

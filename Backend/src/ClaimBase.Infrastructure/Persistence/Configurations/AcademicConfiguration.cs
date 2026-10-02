@@ -5,6 +5,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ClaimBase.Infrastructure.Persistence.Configurations;
 
+/// <summary>EF mapping for <see cref="Campus"/>.</summary>
+public sealed class CampusConfiguration : IEntityTypeConfiguration<Campus>
+{
+    /// <inheritdoc />
+    public void Configure(EntityTypeBuilder<Campus> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.ToTable("Campuses", table => table.HasCheckConstraint("CK_Campuses_Name", "char_length(\"Name\") > 0"));
+        builder.HasKey(campus => campus.Id);
+        builder.Property(campus => campus.Id).HasMaxLength(UserConstraints.IdMaxLength);
+        builder.Property(campus => campus.TenantId).HasMaxLength(UserConstraints.IdMaxLength).IsRequired();
+        builder.Property(campus => campus.Name).HasMaxLength(AcademicConstraints.NameMaxLength).IsRequired();
+        builder.HasIndex(campus => new { campus.TenantId, campus.Name }).IsUnique();
+    }
+}
+
 /// <summary>EF mapping for <see cref="Faculty"/>.</summary>
 public sealed class FacultyConfiguration : IEntityTypeConfiguration<Faculty>
 {
@@ -16,8 +32,10 @@ public sealed class FacultyConfiguration : IEntityTypeConfiguration<Faculty>
         builder.HasKey(faculty => faculty.Id);
         builder.Property(faculty => faculty.Id).HasMaxLength(UserConstraints.IdMaxLength);
         builder.Property(faculty => faculty.TenantId).HasMaxLength(UserConstraints.IdMaxLength).IsRequired();
+        builder.Property(faculty => faculty.CampusId).HasMaxLength(UserConstraints.IdMaxLength).IsRequired();
         builder.Property(faculty => faculty.Name).HasMaxLength(AcademicConstraints.NameMaxLength).IsRequired();
-        builder.HasIndex(faculty => new { faculty.TenantId, faculty.Name }).IsUnique();
+        builder.HasOne<Campus>().WithMany().HasForeignKey(faculty => faculty.CampusId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(faculty => new { faculty.TenantId, faculty.CampusId, faculty.Name }).IsUnique();
     }
 }
 

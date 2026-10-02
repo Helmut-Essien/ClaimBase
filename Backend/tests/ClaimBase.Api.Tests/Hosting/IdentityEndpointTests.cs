@@ -166,8 +166,12 @@ public class IdentityEndpointTests
         if (departmentId is not null)
         {
             var facultyId = "01JF" + departmentId[4..];
+            var campusId = "01JC" + departmentId[4..];
+            if (!await db.Campuses.IgnoreQueryFilters().AnyAsync(campus => campus.Id == campusId))
+                db.Campuses.Add(Campus.Create(campusId, tenantId, "Campus " + campusId[^6..]));
+
             if (!await db.Faculties.IgnoreQueryFilters().AnyAsync(faculty => faculty.Id == facultyId))
-                db.Faculties.Add(Faculty.Create(facultyId, tenantId, "Faculty " + facultyId[^6..]));
+                db.Faculties.Add(Faculty.Create(facultyId, tenantId, campusId, "Faculty " + facultyId[^6..]));
 
             if (!await db.Departments.IgnoreQueryFilters().AnyAsync(department => department.Id == departmentId))
                 db.Departments.Add(Department.Create(departmentId, tenantId, facultyId, "Department"));

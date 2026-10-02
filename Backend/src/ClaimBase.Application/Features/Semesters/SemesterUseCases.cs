@@ -62,6 +62,9 @@ public sealed class CreateSemesterCommandValidator : AbstractValidator<CreateSem
     public CreateSemesterCommandValidator()
     {
         RuleFor(command => command.Name).NotEmpty().MaximumLength(AcademicConstraints.NameMaxLength);
+        // [Required] does not reject a missing DateOnly. Model binding leaves 0001-01-01.
+        RuleFor(command => command.StartDate).Must(date => date != default).WithMessage("StartDate is required.");
+        RuleFor(command => command.EndDate).Must(date => date != default).WithMessage("EndDate is required.");
         RuleFor(command => command.EndDate).GreaterThanOrEqualTo(command => command.StartDate);
     }
 }
@@ -119,6 +122,9 @@ public sealed class UpdateSemesterCommandValidator : AbstractValidator<UpdateSem
     {
         RuleFor(command => command.Id).NotEmpty().MaximumLength(UserConstraints.IdMaxLength);
         RuleFor(command => command.Name).NotEmpty().MaximumLength(AcademicConstraints.NameMaxLength);
+        // [Required] does not reject a missing DateOnly. Model binding leaves 0001-01-01.
+        RuleFor(command => command.StartDate).Must(date => date != default).WithMessage("StartDate is required.");
+        RuleFor(command => command.EndDate).Must(date => date != default).WithMessage("EndDate is required.");
         RuleFor(command => command.EndDate).GreaterThanOrEqualTo(command => command.StartDate);
     }
 }

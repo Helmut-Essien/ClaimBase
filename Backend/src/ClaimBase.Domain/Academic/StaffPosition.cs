@@ -52,6 +52,10 @@ public sealed class StaffPosition
         DateOnly effectiveFrom,
         DateOnly? effectiveTo)
     {
+        // A missing JSON date binds as 0001-01-01. That is not an appointment start.
+        if (effectiveFrom == default)
+            throw new ArgumentException("EffectiveFrom is required.", nameof(effectiveFrom));
+
         if (effectiveTo is not null && effectiveTo.Value <= effectiveFrom)
             throw new ArgumentException("EffectiveTo must be after EffectiveFrom.", nameof(effectiveTo));
 

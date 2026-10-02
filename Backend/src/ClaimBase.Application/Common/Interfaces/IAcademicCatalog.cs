@@ -9,11 +9,23 @@ namespace ClaimBase.Application.Common.Interfaces;
 /// </summary>
 public interface IAcademicCatalog
 {
-    /// <summary>Lists faculties ordered by name.</summary>
-    Task<PagedResult<FacultyResponse>> ListFacultiesAsync(int page, int pageSize, CancellationToken cancellationToken);
+    /// <summary>Lists campuses ordered by name.</summary>
+    Task<PagedResult<CampusResponse>> ListCampusesAsync(int page, int pageSize, CancellationToken cancellationToken);
 
-    /// <summary>True when another faculty in this tenant already uses the name, ignoring case.</summary>
-    Task<bool> FacultyNameTakenAsync(string name, CancellationToken cancellationToken);
+    /// <summary>True when another campus in this tenant already uses the name, ignoring case.</summary>
+    Task<bool> CampusNameTakenAsync(string name, CancellationToken cancellationToken);
+
+    /// <summary>Loads one campus in this tenant.</summary>
+    Task<CampusResponse?> GetCampusAsync(string campusId, CancellationToken cancellationToken);
+
+    /// <summary>Stages a campus.</summary>
+    void Add(Campus campus);
+
+    /// <summary>Lists faculties ordered by campus, then name. <paramref name="campusId"/> limits the page.</summary>
+    Task<PagedResult<FacultyResponse>> ListFacultiesAsync(int page, int pageSize, string? campusId, CancellationToken cancellationToken);
+
+    /// <summary>True when another faculty on this campus already uses the name, ignoring case.</summary>
+    Task<bool> FacultyNameTakenAsync(string campusId, string name, CancellationToken cancellationToken);
 
     /// <summary>Stages a faculty.</summary>
     void Add(Faculty faculty);
@@ -30,7 +42,7 @@ public interface IAcademicCatalog
     /// <summary>True when the department is in this tenant.</summary>
     Task<bool> DepartmentExistsAsync(string departmentId, CancellationToken cancellationToken);
 
-    /// <summary>Loads one department with its faculty name.</summary>
+    /// <summary>Loads one department with its campus and faculty names.</summary>
     Task<DepartmentResponse?> GetDepartmentAsync(string departmentId, CancellationToken cancellationToken);
 
     /// <summary>Stages a department.</summary>

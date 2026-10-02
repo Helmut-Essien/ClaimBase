@@ -375,6 +375,8 @@ public sealed class CreateStaffPositionCommandValidator : AbstractValidator<Crea
     {
         RuleFor(command => command.StaffId).NotEmpty().MaximumLength(UserConstraints.IdMaxLength);
         RuleFor(command => command.PositionTitleId).NotEmpty().MaximumLength(UserConstraints.IdMaxLength);
+        // [Required] does not reject a missing DateOnly. Model binding leaves 0001-01-01.
+        RuleFor(command => command.EffectiveFrom).Must(date => date != default).WithMessage("EffectiveFrom is required.");
         RuleFor(command => command.EffectiveTo)
             .Must((command, effectiveTo) => effectiveTo is null || effectiveTo.Value > command.EffectiveFrom);
     }

@@ -31,9 +31,11 @@ public class AcademicEndpointTests
     {
         using var client = await SignInAsync(UserRole.Admin);
         var suffix = NewId()[..6];
+        var campus = await CreateCampusAsync(client, "Legon " + suffix);
 
-        var faculty = await PostAsync<FacultyResponse>(client, "/api/faculties", new { name = "Science " + suffix });
+        var faculty = await PostAsync<FacultyResponse>(client, "/api/faculties", new { campusId = campus.Id, name = "Science " + suffix });
         faculty.Status.Should().Be(HttpStatusCode.Created);
+        faculty.Body!.CampusName.Should().Be("Legon " + suffix);
 
         var department = await PostAsync<DepartmentResponse>(client, "/api/departments", new { facultyId = faculty.Body!.Id, name = "Physics" });
         department.Status.Should().Be(HttpStatusCode.Created);
@@ -63,8 +65,8 @@ public class AcademicEndpointTests
         using var hod = await SignInAsync(UserRole.HeadOfDepartment);
         using var lecturer = await SignInAsync(UserRole.Lecturer);
 
-        var hodResponse = await hod.PostAsJsonAsync("/api/faculties", new { name = "Blocked " + NewId() });
-        var lecturerResponse = await lecturer.PostAsJsonAsync("/api/faculties", new { name = "Blocked " + NewId() });
+        var hodResponse = await hod.PostAsJsonAsync("/api/campuses", new { name = "Blocked " + NewId() });
+        var lecturerResponse = await lecturer.PostAsJsonAsync("/api/campuses", new { name = "Blocked " + NewId() });
 
         hodResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         lecturerResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -77,7 +79,8 @@ public class AcademicEndpointTests
     {
         using var owner = await SignInAsync(UserRole.Admin);
         using var other = await SignInAsync(UserRole.Admin);
-        var faculty = await PostAsync<FacultyResponse>(owner, "/api/faculties", new { name = "Owned " + NewId() });
+        var campus = await CreateCampusAsync(owner, "Owned campus " + NewId());
+        var faculty = await PostAsync<FacultyResponse>(owner, "/api/faculties", new { campusId = campus.Id, name = "Owned " + NewId() });
 
         var response = await other.PostAsJsonAsync("/api/departments", new { facultyId = faculty.Body!.Id, name = "Remote" });
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -117,7 +120,8 @@ public class AcademicEndpointTests
     {
         using var client = await SignInAsync(UserRole.Admin);
         var suffix = NewId()[..6];
-        var faculty = await PostAsync<FacultyResponse>(client, "/api/faculties", new { name = "Arts " + suffix });
+        var campus = await CreateCampusAsync(client, "City " + suffix);
+        var faculty = await PostAsync<FacultyResponse>(client, "/api/faculties", new { campusId = campus.Id, name = "Arts " + suffix });
         var firstDepartment = await PostAsync<DepartmentResponse>(client, "/api/departments", new { facultyId = faculty.Body!.Id, name = "History" });
         var secondDepartment = await PostAsync<DepartmentResponse>(client, "/api/departments", new { facultyId = faculty.Body.Id, name = "Music" });
         var staff = await PostAsync<StaffResponse>(client, "/api/staff", new
@@ -158,6 +162,51 @@ public class AcademicEndpointTests
         touching.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    [Fact]
+    public async Task FacultyName_IsUniquePerCampus()
+    {
+        using var client = await SignInAsync(UserRole.Admin);
+        var name = "Science " + NewId()[..6];
+        var firstCampus = await CreateCampusAsync(client, "North " + NewId()[..6]);
+        var secondCampus = await CreateCampusAsync(client, "South " + NewId()[..6]);
+
+        var first = await PostAsync<FacultyResponse>(client, "/api/faculties", new { campusId = firstCampus.Id, name });
+        var sameCampus = await client.PostAsJsonAsync("/api/faculties", new { campusId = firstCampus.Id, name = " " + name + " " });
+        var otherCampus = await PostAsync<FacultyResponse>(client, "/api/faculties", new { campusId = secondCampus.Id, name });
+        var missingCampus = await client.PostAsJsonAsync("/api/faculties", new { campusId = NewId(), name = "Law" });
+
+        first.Status.Should().Be(HttpStatusCode.Created);
+        sameCampus.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        otherCampus.Status.Should().Be(HttpStatusCode.Created);
+        missingCampus.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task OmittedDates_AreBadRequest()
+    {
+        using var client = await SignInAsync(UserRole.Admin);
+        var suffix = NewId()[..6];
+        var campus = await CreateCampusAsync(client, "Dates " + suffix);
+        var faculty = await PostAsync<FacultyResponse>(client, "/api/faculties", new { campusId = campus.Id, name = "Science " + suffix });
+        var department = await PostAsync<DepartmentResponse>(client, "/api/departments", new { facultyId = faculty.Body!.Id, name = "Physics" });
+        var staff = await PostAsync<StaffResponse>(client, "/api/staff", new
+        {
+            staffNumber = "D-" + suffix,
+            displayName = "Ada",
+            employmentType = "PartTime",
+            departmentIds = new[] { department.Body!.Id }
+        });
+        var title = await PostAsync<PositionTitleResponse>(client, "/api/position-titles", new { name = "Lecturer " + suffix });
+
+        var semester = await client.PostAsJsonAsync("/api/semesters", new { name = "Undated " + suffix });
+        var position = await client.PostAsJsonAsync(
+            $"/api/staff/{staff.Body!.Id}/positions",
+            new { positionTitleId = title.Body!.Id });
+
+        semester.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        position.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private async Task<HttpClient> SignInAsync(UserRole role)
     {
         var tenantId = NewId();
@@ -186,7 +235,9 @@ public class AcademicEndpointTests
         if (departmentId is not null)
         {
             var facultyId = "01JF" + departmentId[4..];
-            db.Faculties.Add(Faculty.Create(facultyId, tenantId, "Faculty " + facultyId[^6..]));
+            var campusId = "01JC" + departmentId[4..];
+            db.Campuses.Add(Campus.Create(campusId, tenantId, "Campus " + campusId[^6..]));
+            db.Faculties.Add(Faculty.Create(facultyId, tenantId, campusId, "Faculty " + facultyId[^6..]));
             db.Departments.Add(Department.Create(departmentId, tenantId, facultyId, "Department"));
         }
 
@@ -195,6 +246,13 @@ public class AcademicEndpointTests
 
         db.Users.Add(User.Create(userId, tenantId, email, "Test User", passwords.Hash(Password), role, departmentId, staffId, createdAt));
         await db.SaveChangesAsync();
+    }
+
+    private async Task<CampusResponse> CreateCampusAsync(HttpClient client, string name)
+    {
+        var campus = await PostAsync<CampusResponse>(client, "/api/campuses", new { name });
+        campus.Status.Should().Be(HttpStatusCode.Created);
+        return campus.Body!;
     }
 
     private static async Task<(HttpStatusCode Status, T? Body)> PostAsync<T>(HttpClient client, string path, object body)

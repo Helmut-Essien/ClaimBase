@@ -90,6 +90,13 @@ public sealed class Semester
 
     private static void EnsureDateOrder(DateOnly startDate, DateOnly endDate)
     {
+        // A missing JSON date binds as 0001-01-01. That is not a semester day.
+        if (startDate == default)
+            throw new ArgumentException("StartDate is required.", nameof(startDate));
+
+        if (endDate == default)
+            throw new ArgumentException("EndDate is required.", nameof(endDate));
+
         if (endDate < startDate)
             throw new ArgumentException("EndDate must be on or after StartDate.", nameof(endDate));
     }

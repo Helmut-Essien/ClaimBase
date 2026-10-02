@@ -72,17 +72,18 @@ Catalog that session logs and the rate matrix both use.
 
 ---
 
-## 5. Faculties and departments
+## 5. Campuses, faculties, and departments
 
-**Route:** `/app/faculties`
+**Routes:** `/app/campuses`, `/app/faculties`
 
 ### Purpose
-Create a faculty, then add the departments that sit under it.
+Create a campus, then the faculties on that campus, then the departments under each faculty.
 
 ### Content
-- Faculty name, unique in the tenant.
+- Campus name, unique in the tenant. Semesters and rates are not chosen here.
+- Faculty name, unique on the selected campus. The same name may be used on another campus.
 - Under each faculty: department name, unique inside that faculty.
-- A department always displays its faculty. There is no department without a faculty.
+- A faculty always displays its campus. A department always displays its faculty. There is no faculty without a campus, and no department without a faculty.
 
 ## 6. Staff
 
@@ -93,7 +94,7 @@ People who can be claimed, including part-time and full-time.
 
 ### Content
 - Staff number, name, employment type, optional biometric id, optional email. When the biometric id is filled in, it is the id on the device.
-- Department assignments: at least one, each shown as faculty and department. More than one is allowed. The form cannot save with an empty list, and the last assignment cannot be removed.
+- Department assignments: at least one, each shown as campus, faculty, and department. More than one is allowed, including departments on different campuses. The form cannot save with an empty list, and the last assignment cannot be removed.
 - Position records on this lecturer: title, effective from, effective to. This is the only place a person is given a position.
 - Overlapping position dates show the API 409 on that row.
 - The title dropdown lists shared titles (Professor, Senior Lecturer, and any the tenant added). Adding a row here creates the lecturer's position record. It does not create a new title unless the admin is maintaining the title list beside the rates.
@@ -124,7 +125,7 @@ Set the hourly teaching matrix and the transport rate. This page is not part of 
 See logged lectures. Admins may enter one on behalf of a lecturer.
 
 ### Content
-- Filters: semester, faculty, department, staff, course code. Paged. A department filter lists only departments in the selected faculty.
+- Filters: semester, campus, faculty, department, staff, course code. Paged. A faculty filter lists only faculties on the selected campus. A department filter lists only departments in the selected faculty.
 - Columns include start, end, and duration. No amount column.
 - Create form (Admin / TenantAdmin): staff, course code, start, end.
 - Offline lecturer entry is not replicated here. This form requires the network.

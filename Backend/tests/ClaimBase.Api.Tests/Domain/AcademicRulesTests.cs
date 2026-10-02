@@ -64,6 +64,16 @@ public class AcademicRulesTests
     }
 
     [Fact]
+    public void SemesterAndAppointmentRejectTheUnsetDate()
+    {
+        var semester = () => Semester.Create(EntityId, TenantId, "2026", default, default);
+        semester.Should().Throw<ArgumentException>().WithMessage("StartDate is required.*");
+
+        var appointment = () => StaffPosition.Create(EntityId, TenantId, EntityId, EntityId, default, null);
+        appointment.Should().Throw<ArgumentException>().WithMessage("EffectiveFrom is required.*");
+    }
+
+    [Fact]
     public void CourseCodeIsStoredUppercaseAndStaffEmailLowercase()
     {
         var course = Course.Create(EntityId, TenantId, " cs101 ", "Intro", EntityId);

@@ -41,6 +41,7 @@ Sidebar starts at `lg` (1024px), not `md`, so landscape phones keep the bottom n
 | Item | Route | Roles |
 |------|-------|--------|
 | Home | `/app` | All Portal roles |
+| Campuses | `/app/campuses` | TenantAdmin, Admin |
 | Faculties | `/app/faculties` | TenantAdmin, Admin |
 | Semesters | `/app/semesters` | TenantAdmin, Admin |
 | Courses | `/app/courses` | TenantAdmin, Admin |

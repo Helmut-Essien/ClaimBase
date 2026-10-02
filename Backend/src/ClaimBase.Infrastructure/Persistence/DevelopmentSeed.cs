@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 namespace ClaimBase.Infrastructure.Persistence;
 
 /// <summary>
-/// Inserts one development university, its faculty and department, one lecturer, and one user per role.
+/// Inserts one development university, its campus, faculty and department, one lecturer, and one user per role.
 /// The password is read from configuration and is not in source.
 /// Parents are inserted before users so the department and staff foreign keys can be applied.
 /// </summary>
@@ -36,6 +36,9 @@ public static class DevelopmentSeed
 
     /// <summary>Development staff id.</summary>
     public const string StaffId = "01JB0000000000000000000008";
+
+    /// <summary>Development campus id.</summary>
+    public const string CampusId = "01JB000000000000000000000B";
 
     /// <summary>Development faculty id.</summary>
     public const string FacultyId = "01JB0000000000000000000009";
@@ -90,7 +93,8 @@ public static class DevelopmentSeed
         var tenant = Tenant.Create(TenantId, "Development University", "GHS", "Africa/Accra", createdAt);
 
         db.Tenants.Add(tenant);
-        db.Faculties.Add(Faculty.Create(FacultyId, TenantId, "Development Faculty"));
+        db.Campuses.Add(Campus.Create(CampusId, TenantId, "Development Campus"));
+        db.Faculties.Add(Faculty.Create(FacultyId, TenantId, CampusId, "Development Faculty"));
         db.Departments.Add(Department.Create(DepartmentId, TenantId, FacultyId, "Development Department"));
         db.Staff.Add(Staff.Create(StaffId, TenantId, "DEV-LEC", "Dev Lecturer", LecturerEmail, EmploymentType.PartTime, null));
         db.StaffDepartments.Add(StaffDepartment.Create(StaffDepartmentId, TenantId, StaffId, DepartmentId));

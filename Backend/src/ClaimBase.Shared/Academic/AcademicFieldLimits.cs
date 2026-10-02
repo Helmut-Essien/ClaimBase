@@ -5,7 +5,7 @@ namespace ClaimBase.Shared.Academic;
 /// </summary>
 public static class AcademicFieldLimits
 {
-    /// <summary>Faculty, department, semester, course, and display names.</summary>
+    /// <summary>Campus, faculty, department, semester, course, and display names.</summary>
     public const int Name = 200;
 
     /// <summary>Qualification and position title names.</summary>

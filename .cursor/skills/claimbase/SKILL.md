@@ -23,7 +23,7 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 
 ## Vision
 
-1. Tenant admins open a semester, then maintain courses, qualifications, and staff. Each lecturer's positions are records on that staff member. Teaching and transport rates are a separate dated schedule. Opening a semester does not require new rates.
+1. Tenant admins open a semester, then maintain campuses, faculties, courses, qualifications, and staff. A campus owns its faculties, and a faculty owns its departments. Each lecturer's positions are records on that staff member. Teaching and transport rates are a separate dated schedule for the whole university. Opening a semester does not require new rates, and a campus does not get its own rate matrix.
 2. Lecturers log each session on MobileApp: course code, start, end. The phone works offline and syncs later.
 3. The claim engine prices each session with the hourly rate for that lecturer's rank and the course qualification in force on that date, multiplied by the session length in hours, plus one transport amount per distinct teaching day.
 4. HoD reviews, Finance approves, and the PDF is generated on demand from the frozen lines.
@@ -124,7 +124,7 @@ This is a modular monolith: one API process, feature folders (`Identity`, `Acade
 - JWT claims: `sub` = userId, `tenantId`, `role`, `departmentId` when the user is a Head of Department.
 - Roles: `TenantAdmin`, `Admin`, `HeadOfDepartment`, `Finance`, `Lecturer`.
 - Lecturers use MobileApp. Portal accounts are the other four roles.
-- A faculty contains departments. A lecturer is assigned to at least one department and may be assigned to more.
+- A campus belongs to the university. A faculty belongs to one campus, and a faculty contains departments. Faculty names are unique on that campus, so two campuses may each have a Faculty of Science. A lecturer is assigned to at least one department and may be assigned to more, including departments on different campuses.
 - Heads of Department see only lecturers assigned to their department. Finance and admins see the tenant. A lecturer in two departments is visible to both Heads. One HoD decision is enough to send that lecturer's claim to Finance.
 
 ## Coding standards

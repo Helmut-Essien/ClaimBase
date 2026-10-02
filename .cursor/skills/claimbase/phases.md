@@ -10,7 +10,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 |-------|-------|--------|
 | 0 | Scaffold: `ClaimBase.sln`, Clean Architecture, Portal, MAUI shell, Docker Postgres, README run steps | **Done** |
 | 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | **Done** |
-| 2 | Academic setup: faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **API done, portal deferred** |
+| 2 | Academic setup: campuses, faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **API done, portal deferred** |
 | 3 | Rates: hourly rank × qualification matrix and tenant transport rate, dated so they carry into later semesters | Planned |
 | 4 | Session logs: API semester gate, Portal list, MAUI offline log + sync | Planned |
 | 5 | Claims: builder, snapshots, HoD then Finance approval, Portal review | Planned |
@@ -39,7 +39,8 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 - Semester statuses: `Draft` → `Open` → `Closed`. Session writes do not exist yet; the status model does.
 - Qualifications are a tenant lookup. Position titles are a tenant lookup used only by rates and by staff position records (not a fixed enum of "Degree" / "Professor").
 - Courses have a unique code per tenant and one qualification.
-- A faculty owns its departments. Department names are unique inside the faculty.
+- A campus belongs to the tenant. Campus names are unique in the tenant. Semesters, courses, qualifications, position titles, and rates stay on the tenant. A campus does not get its own rate matrix or its own semester.
+- A faculty belongs to one campus. Faculty names are unique on that campus. A faculty owns its departments. Department names are unique inside the faculty.
 - Staff have `PartTime` or `FullTime`, at least one department assignment, an optional `BiometricId` equal to the id on the biometric device when the lecturer has one, and an optional lecturer user. A lecturer may belong to more than one department.
 - Each position appointment is a child of that staff member: title, effective from, effective to. Overlapping ranges for the same lecturer are rejected. There is no position screen that is not the staff member's record.
 - Portal screens for these setups, with `*_FIELD_LIMITS`. Not built yet. The API is in place; the portal and mobile app come later.
@@ -69,7 +70,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 - One transport line per distinct local day, snapshotted from the transport rate on that date.
 - Sessions with no teaching rate, or days with no transport rate, are listed as exceptions and omitted from the claim.
 - HoD submits a decision for lecturers assigned to that HoD's department. A lecturer in several departments needs only one of those HoDs to approve. Finance approves or returns the claim. Approved claims reject further rebuilds.
-- Building a claim copies faculty and department names onto `ClaimDepartment`.
+- Building a claim copies campus, faculty, and department names onto `ClaimDepartment`.
 - Part-time and full-time staff both produce claims.
 - `BiometricPresent` exists on the line and stays false until slice 6. Amounts do not wait for it.
 

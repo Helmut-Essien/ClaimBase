@@ -31,6 +31,9 @@ public sealed class AppDbContext : DbContext
     /// <summary>Users.</summary>
     public DbSet<User> Users => Set<User>();
 
+    /// <summary>Campuses.</summary>
+    public DbSet<Campus> Campuses => Set<Campus>();
+
     /// <summary>Faculties.</summary>
     public DbSet<Faculty> Faculties => Set<Faculty>();
 
@@ -67,6 +70,7 @@ public sealed class AppDbContext : DbContext
         // Empty _tenantId matches nothing. That is deliberate: a query without a resolved tenant must not scan every university.
         modelBuilder.Entity<Tenant>().HasQueryFilter(tenant => tenant.Id == _tenantId);
         modelBuilder.Entity<User>().HasQueryFilter(user => user.TenantId == _tenantId);
+        modelBuilder.Entity<Campus>().HasQueryFilter(campus => campus.TenantId == _tenantId);
         modelBuilder.Entity<Faculty>().HasQueryFilter(faculty => faculty.TenantId == _tenantId);
         modelBuilder.Entity<Department>().HasQueryFilter(department => department.TenantId == _tenantId);
         modelBuilder.Entity<Semester>().HasQueryFilter(semester => semester.TenantId == _tenantId);
