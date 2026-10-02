@@ -79,6 +79,7 @@ The project targets Android because that workload is installed. Lecturer sign-in
 | JWT issuer / audience | `ClaimBase.Api` / `ClaimBase.Portal` |
 | JWT key | Development key in `appsettings.Development.json` only |
 | Portal origin | `http://localhost:4201` |
+| Forwarded client IP | Loopback proxies only, plus any `ForwardedHeaders__KnownProxies` or `ForwardedHeaders__KnownNetworks` |
 
 `appsettings.json` ships empty connection string and JWT values. Production refuses to start on the Development password, `Include Error Detail`, a JWT key shorter than 64 characters, or the Development JWT key.
 
@@ -87,7 +88,10 @@ export ASPNETCORE_ENVIRONMENT=Production
 export ConnectionStrings__DefaultConnection="Host=...;Database=claimbase_db;Username=...;Password=..."
 export JWT__KEY="<at least 64 random characters>"
 export CORS__ORIGINS="https://portal.example"
+export ForwardedHeaders__KnownProxies__0="<reverse proxy IP>"
 ```
+
+`ForwardedHeaders__KnownNetworks__0` is a CIDR block when the proxy is a range. Loopback stays trusted either way. A client that is not a known proxy cannot replace its address with `X-Forwarded-For`.
 
 Do not set `Include Error Detail=true` on the Production connection string. Apply EF migrations as a deploy step. The API does not migrate itself in Production.
 

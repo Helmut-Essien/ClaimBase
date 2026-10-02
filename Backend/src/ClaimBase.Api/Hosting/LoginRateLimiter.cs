@@ -11,8 +11,8 @@ public static class LoginRateLimiter
     public const string PolicyName = "login";
 
     /// <summary>
-    /// Adds a fixed window of 10 login attempts per minute per client IP.
-    /// The Testing host raises the window so the suite can sign in for every case.
+    /// Adds a fixed window of 10 login attempts per minute per client IP, and the same window per email.
+    /// The Testing host raises both windows so the suite can sign in for every case.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="environment">Host environment.</param>
@@ -23,6 +23,8 @@ public static class LoginRateLimiter
         ArgumentNullException.ThrowIfNull(environment);
 
         var permitLimit = environment.IsEnvironment("Testing") ? 10_000 : 10;
+        services.AddSingleton(new LoginEmailLimiter(permitLimit));
+        services.AddScoped<LoginEmailRateLimitFilter>();
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

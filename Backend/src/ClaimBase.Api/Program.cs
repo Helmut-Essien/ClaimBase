@@ -5,7 +5,6 @@ using ClaimBase.Application;
 using ClaimBase.Infrastructure;
 using ClaimBase.Infrastructure.Hosting;
 using ClaimBase.Infrastructure.Persistence;
-using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -16,6 +15,7 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
     StartupConfiguration.Validate(builder.Configuration, builder.Environment.EnvironmentName);
+    var forwardedHeaders = ForwardedClientHeaders.Create(builder.Configuration);
 
     builder.WebHost.ConfigureKestrel(options =>
     {
@@ -82,13 +82,8 @@ try
 
     if (app.Environment.IsProduction())
     {
-        var forwarded = new ForwardedHeadersOptions
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-        };
-        forwarded.KnownNetworks.Clear();
-        forwarded.KnownProxies.Clear();
-        app.UseForwardedHeaders(forwarded);
+        // Known proxy lists stay populated. Clearing both of them would trust every X-Forwarded-For.
+        app.UseForwardedHeaders(forwardedHeaders);
         app.UseHsts();
         app.UseHttpsRedirection();
     }

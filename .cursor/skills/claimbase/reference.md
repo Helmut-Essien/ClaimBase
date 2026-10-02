@@ -227,6 +227,8 @@ JWT storage key: `claimbase.token`.
 | `ConnectionStrings__DefaultConnection` | Yes outside Development | PostgreSQL |
 | `JWT__KEY` | Yes | Signing key, ≥ 64 chars in Production |
 | `CORS__ORIGINS` | No | Empty in Production means same-origin Portal |
+| `ForwardedHeaders__KnownProxies__0` | No | Extra reverse-proxy IP allowed to set `X-Forwarded-For`. Loopback stays trusted |
+| `ForwardedHeaders__KnownNetworks__0` | No | Extra reverse-proxy CIDR allowed to set `X-Forwarded-For` |
 | `DataProtection__KeysPath` | Production volume | Key ring |
 | `Hangfire__WorkerCount` | No | Default 1 |
 
