@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API (Development)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/Backend/src/ClaimBase.Api/bin/Debug/net9.0/ClaimBase.Api.dll",
+      "cwd": "${workspaceFolder}/Backend/src/ClaimBase.Api",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "launchSettingsFilePath": "${workspaceFolder}/Backend/src/ClaimBase.Api/Properties/launchSettings.json",
+      "launchSettingsProfile": "http",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5190"
+      }
+    },
+    {
+      "name": "Portal (Development)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "portal: start",
+      "url": "http://localhost:4201/",
+      "webRoot": "${workspaceFolder}/Portal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "ClaimBase (Development)",
+      "configurations": ["API (Development)", "Portal (Development)"],
+      "stopAll": true
+    }
+  ]
+}
