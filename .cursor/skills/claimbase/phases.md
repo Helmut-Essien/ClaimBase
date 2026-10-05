@@ -11,7 +11,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 | 0 | Scaffold: `ClaimBase.sln`, Clean Architecture, Portal, MAUI shell, Docker Postgres, README run steps | **Done** |
 | 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | **Done** |
 | 2 | Academic setup: campuses, faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **Done** |
-| 3 | Rates: hourly rank × qualification matrix and tenant transport rate, dated so they carry into later semesters | Planned |
+| 3 | Rates: hourly rank × qualification matrix and tenant transport rate, dated so they carry into later semesters | **Done** |
 | 4 | Session logs: API semester gate, Portal list, MAUI offline log + sync | Planned |
 | 5 | Claims: builder, snapshots, HoD then Finance approval, Portal review | Planned |
 | 6 | Biometric Excel import, presence flags, on-demand QuestPDF | Planned |

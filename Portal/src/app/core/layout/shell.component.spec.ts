@@ -30,6 +30,7 @@ describe('ShellComponent', () => {
           { path: 'app/semesters', children: [] },
           { path: 'app/courses', children: [] },
           { path: 'app/staff', children: [] },
+          { path: 'app/rates', children: [] },
         ]),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -45,6 +46,7 @@ describe('ShellComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Campuses');
     expect(fixture.nativeElement.textContent).toContain('Staff');
+    expect(fixture.nativeElement.textContent).toContain('Rates');
 
     auth.profile.set(profile('Finance'));
     fixture.detectChanges();

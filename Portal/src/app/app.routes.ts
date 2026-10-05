@@ -52,6 +52,11 @@ export const routes: Routes = [
         canActivate: [setupGuard],
         loadComponent: () => import('./features/staff/pages/staff.component').then((m) => m.StaffComponent),
       },
+      {
+        path: 'rates',
+        canActivate: [setupGuard],
+        loadComponent: () => import('./features/rates/pages/rates/rates.component').then((m) => m.RatesComponent),
+      },
     ],
   },
   {

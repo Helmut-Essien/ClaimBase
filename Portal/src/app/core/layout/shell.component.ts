@@ -22,6 +22,7 @@ const setupLinks: ShellLink[] = [
   { label: 'Semesters', path: '/app/semesters', exact: false },
   { label: 'Courses', path: '/app/courses', exact: false },
   { label: 'Staff', path: '/app/staff', exact: false },
+  { label: 'Rates', path: '/app/rates', exact: false },
 ];
 
 /**

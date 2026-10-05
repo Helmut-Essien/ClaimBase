@@ -1,0 +1,255 @@
+<h1 class="page-title">Rates</h1>
+<p class="mt-2 max-w-xl text-base">
+  This schedule belongs to the university, not to a semester or a campus. An amount with no end date keeps applying in
+  later semesters. Dates with no row are omitted from claims. They are not stored as zero. Dates use {{ zoneCaption() }}.
+</p>
+
+<h2 class="mt-8 text-lg font-semibold text-ink">Teaching rates</h2>
+<p class="mt-2 max-w-xl text-base">Cedis per hour for one position and one qualification. Saving a cell adds one row.</p>
+
+@if (catalogError()) {
+  <p class="cb-banner" role="alert">{{ catalogError() }}</p>
+}
+@if (titlesTruncated() || qualificationsTruncated()) {
+  <p class="mt-4 text-base">The first 100 titles or qualifications are shown.</p>
+}
+@if (matrixTruncated()) {
+  <p class="mt-4 text-base">Some amounts in force today are not on the matrix.</p>
+}
+@if (matrixError()) {
+  <p class="cb-banner" role="alert">{{ matrixError() }}</p>
+} @else if (loadingCatalog() || loadingMatrix()) {
+  <p class="mt-6 text-base">Please wait…</p>
+} @else if (titles().length === 0) {
+  <p class="mt-6 text-base">
+    Add a position title on <a class="font-semibold text-ink" routerLink="/app/staff">Staff</a> before setting an hourly
+    rate.
+  </p>
+} @else if (qualifications().length === 0) {
+  <p class="mt-6 text-base">
+    Add a qualification on <a class="font-semibold text-ink" routerLink="/app/courses">Courses</a> before setting an
+    hourly rate.
+  </p>
+} @else {
+  <!-- Qualifications stay in columns on a phone, so the grid scrolls sideways instead of stacking cells. -->
+  <div class="mt-4 overflow-x-auto">
+    <table class="w-full min-w-[32rem] border-collapse">
+      <thead>
+        <tr>
+          <th class="cb-th">Position</th>
+          @for (qualification of qualifications(); track qualification.id) {
+            <th class="cb-th">{{ qualification.name }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of matrix(); track row.title.id) {
+          <tr>
+            <th class="cb-td text-left font-semibold text-ink">{{ row.title.name }}</th>
+            @for (cell of row.cells; track cell.qualification.id) {
+              <td class="cb-td">
+                <button
+                  type="button"
+                  class="min-h-11 w-full rounded-md px-2 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  [class.ring-2]="isSelected(row.title.id, cell.qualification.id)"
+                  [class.ring-ink]="isSelected(row.title.id, cell.qualification.id)"
+                  [attr.aria-pressed]="isSelected(row.title.id, cell.qualification.id)"
+                  (click)="selectCell(row.title.id, cell.qualification.id)"
+                >
+                  @if (cell.rate) {
+                    <span class="tabular-nums">{{ money(cell.rate.amount) }}</span>
+                    <span class="mt-1 block text-sm text-muted">{{ rangeLabel(cell.rate) }}</span>
+                  } @else {
+                    <span>No rate</span>
+                  }
+                </button>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<form class="mt-6 max-w-xl" [formGroup]="teachingForm" (ngSubmit)="submitTeaching()" novalidate>
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <label class="cb-label" for="teaching-title">Position</label>
+      <select id="teaching-title" class="cb-input" formControlName="positionTitleId" (change)="onPairChange()">
+        <option value="">Choose a position</option>
+        @for (title of titles(); track title.id) {
+          <option [value]="title.id">{{ title.name }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="cb-label" for="teaching-qualification">Qualification</label>
+      <select
+        id="teaching-qualification"
+        class="cb-input"
+        formControlName="qualificationId"
+        (change)="onPairChange()"
+      >
+        <option value="">Choose a qualification</option>
+        @for (qualification of qualifications(); track qualification.id) {
+          <option [value]="qualification.id">{{ qualification.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  @if (teachingForm.controls.positionTitleId.touched && teachingForm.controls.positionTitleId.invalid) {
+    <p class="cb-field-error">Choose a position.</p>
+  }
+  @if (teachingForm.controls.qualificationId.touched && teachingForm.controls.qualificationId.invalid) {
+    <p class="cb-field-error">Choose a qualification.</p>
+  }
+
+  <label class="cb-label" for="teaching-amount">Cedis per hour</label>
+  <input id="teaching-amount" class="cb-input tabular-nums" type="text" inputmode="decimal" formControlName="amount" />
+  @if (teachingForm.controls.amount.touched && teachingForm.controls.amount.invalid) {
+    <p class="cb-field-error">Enter an amount with at most 2 decimal places.</p>
+  }
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <label class="cb-label" for="teaching-from">Effective from</label>
+      <input id="teaching-from" class="cb-input" type="date" formControlName="effectiveFrom" />
+    </div>
+    <div>
+      <label class="cb-label" for="teaching-to">Effective to</label>
+      <input id="teaching-to" class="cb-input" type="date" formControlName="effectiveTo" />
+    </div>
+  </div>
+  <p class="mt-2 text-sm text-muted">Leave the end date empty to keep this amount. A filled end is the first day excluded.</p>
+  @if (teachingForm.controls.effectiveFrom.touched && teachingForm.controls.effectiveFrom.invalid) {
+    <p class="cb-field-error">Enter the first day included.</p>
+  }
+  @if (teachingForm.touched && teachingForm.hasError('dateOrder')) {
+    <p class="cb-field-error">The end date must be after the start date.</p>
+  }
+  @if (teachingError()) {
+    <p class="cb-banner" role="alert">{{ teachingError() }}</p>
+  }
+  <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingTeaching()">
+    {{ submittingTeaching() ? 'Please wait…' : 'Save teaching rate' }}
+  </button>
+</form>
+
+@if (teachingForm.controls.positionTitleId.value && teachingForm.controls.qualificationId.value) {
+  <h3 class="mt-8 text-base font-semibold text-ink">Rows for this position and qualification</h3>
+  @if (historyError()) {
+    <p class="cb-banner" role="alert">{{ historyError() }}</p>
+  } @else if (loadingHistory() && history().length === 0) {
+    <p class="mt-4 text-base">Please wait…</p>
+  } @else if (history().length === 0) {
+    <p class="mt-4 text-base">No rows for this position and qualification yet.</p>
+  } @else {
+    <ul class="mt-4 space-y-3 lg:hidden">
+      @for (rate of history(); track rate.id) {
+        <li class="cb-card">
+          <p class="tabular-nums font-semibold text-ink">{{ money(rate.amount) }}</p>
+          <p class="text-sm text-muted">{{ rangeLabel(rate) }}</p>
+        </li>
+      }
+    </ul>
+    <table class="mt-4 hidden w-full border-collapse lg:table">
+      <thead>
+        <tr>
+          <th class="cb-th">Amount</th>
+          <th class="cb-th">Dates</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (rate of history(); track rate.id) {
+          <tr>
+            <td class="cb-td tabular-nums">{{ money(rate.amount) }}</td>
+            <td class="cb-td">{{ rangeLabel(rate) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-pager
+      [page]="historyPage()"
+      [pageSize]="pageSize"
+      [totalCount]="historyTotal()"
+      (pageChange)="loadHistory($event)"
+    />
+  }
+}
+
+<h2 class="mt-10 text-lg font-semibold text-ink">Transport</h2>
+<p class="mt-2 max-w-xl text-base">
+  Paid once per teaching day, for every position. It is not an hourly rate. A day with no row is omitted from the claim.
+</p>
+
+<form class="mt-6 max-w-xl" [formGroup]="transportForm" (ngSubmit)="submitTransport()" novalidate>
+  <label class="cb-label" for="transport-amount">Cedis per teaching day</label>
+  <input id="transport-amount" class="cb-input tabular-nums" type="text" inputmode="decimal" formControlName="amount" />
+  @if (transportForm.controls.amount.touched && transportForm.controls.amount.invalid) {
+    <p class="cb-field-error">Enter an amount with at most 2 decimal places.</p>
+  }
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <div>
+      <label class="cb-label" for="transport-from">Effective from</label>
+      <input id="transport-from" class="cb-input" type="date" formControlName="effectiveFrom" />
+    </div>
+    <div>
+      <label class="cb-label" for="transport-to">Effective to</label>
+      <input id="transport-to" class="cb-input" type="date" formControlName="effectiveTo" />
+    </div>
+  </div>
+  <p class="mt-2 text-sm text-muted">Leave the end date empty to keep this amount. A filled end is the first day excluded.</p>
+  @if (transportForm.controls.effectiveFrom.touched && transportForm.controls.effectiveFrom.invalid) {
+    <p class="cb-field-error">Enter the first day included.</p>
+  }
+  @if (transportForm.touched && transportForm.hasError('dateOrder')) {
+    <p class="cb-field-error">The end date must be after the start date.</p>
+  }
+  @if (transportError()) {
+    <p class="cb-banner" role="alert">{{ transportError() }}</p>
+  }
+  <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingTransport()">
+    {{ submittingTransport() ? 'Please wait…' : 'Save transport rate' }}
+  </button>
+</form>
+
+@if (transportLoadError()) {
+  <p class="cb-banner" role="alert">{{ transportLoadError() }}</p>
+} @else if (loadingTransport() && transport().length === 0) {
+  <p class="mt-8 text-base">Please wait…</p>
+} @else if (transport().length === 0) {
+  <p class="mt-8 text-base">No transport rate yet.</p>
+} @else {
+  <ul class="mt-8 space-y-3 lg:hidden">
+    @for (rate of transport(); track rate.id) {
+      <li class="cb-card">
+        <p class="tabular-nums font-semibold text-ink">{{ money(rate.amount) }}</p>
+        <p class="text-sm text-muted">{{ rangeLabel(rate) }}</p>
+      </li>
+    }
+  </ul>
+  <table class="mt-8 hidden w-full border-collapse lg:table">
+    <thead>
+      <tr>
+        <th class="cb-th">Amount</th>
+        <th class="cb-th">Dates</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (rate of transport(); track rate.id) {
+        <tr>
+          <td class="cb-td tabular-nums">{{ money(rate.amount) }}</td>
+          <td class="cb-td">{{ rangeLabel(rate) }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-pager
+    [page]="transportPage()"
+    [pageSize]="pageSize"
+    [totalCount]="transportTotal()"
+    (pageChange)="loadTransport($event)"
+  />
+}

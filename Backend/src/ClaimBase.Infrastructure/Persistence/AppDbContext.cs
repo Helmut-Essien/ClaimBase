@@ -1,6 +1,7 @@
 using ClaimBase.Application.Common.Interfaces;
 using ClaimBase.Domain.Academic;
 using ClaimBase.Domain.Identity;
+using ClaimBase.Domain.Rates;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClaimBase.Infrastructure.Persistence;
@@ -61,6 +62,12 @@ public sealed class AppDbContext : DbContext
     /// <summary>Staff position appointments.</summary>
     public DbSet<StaffPosition> StaffPositions => Set<StaffPosition>();
 
+    /// <summary>Hourly teaching rates.</summary>
+    public DbSet<TeachingRate> TeachingRates => Set<TeachingRate>();
+
+    /// <summary>Transport rates, one timeline per tenant.</summary>
+    public DbSet<TransportRate> TransportRates => Set<TransportRate>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,5 +87,7 @@ public sealed class AppDbContext : DbContext
         modelBuilder.Entity<Staff>().HasQueryFilter(staff => staff.TenantId == _tenantId);
         modelBuilder.Entity<StaffDepartment>().HasQueryFilter(assignment => assignment.TenantId == _tenantId);
         modelBuilder.Entity<StaffPosition>().HasQueryFilter(position => position.TenantId == _tenantId);
+        modelBuilder.Entity<TeachingRate>().HasQueryFilter(rate => rate.TenantId == _tenantId);
+        modelBuilder.Entity<TransportRate>().HasQueryFilter(rate => rate.TenantId == _tenantId);
     }
 }
