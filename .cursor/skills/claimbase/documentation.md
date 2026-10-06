@@ -92,7 +92,7 @@ Use `/** */` on **exported** APIs. Components document the class when the select
 | Guards / interceptor | Which roles pass, and that a lecturer JWT is rejected. |
 | Standalone component | The job of the view. Signals for submitting, paging, and frozen claims. |
 | `routes.ts` | File-level note when guards or lazy loading are the point of the file. |
-| Template (`.html`) | Comment only for intent classes do not show: sidebar versus bottom nav, safe-area padding, presence mark is not a pay rule. |
+| Template (`.html`) | Comment only for intent classes do not show: phone drawer versus the fixed sidebar, safe-area padding, presence mark is not a pay rule. |
 | Specs | Test names document behavior. |
 
 ```typescript

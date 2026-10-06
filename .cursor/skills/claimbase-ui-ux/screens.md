@@ -16,6 +16,9 @@ Day-to-day sign-in for tenant staff. Accounts are issued by a tenant admin.
 ### Mobile
 - Brand block about `42svh`, safe-area padding, then the form.
 - Email, password, full-width primary Sign in.
+- Password starts masked. The control shows a closed eye until it is pressed.
+- The last email typed in this browser is filled in on the next visit. The password is not stored.
+- The Methodist University Ghana crest from the AssetTag sign-in page sits on the brand panel.
 
 ### Desktop (`lg+`)
 - Brand panel about 42% width. Form on the paper canvas.

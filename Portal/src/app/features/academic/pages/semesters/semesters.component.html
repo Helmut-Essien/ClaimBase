@@ -1,10 +1,10 @@
 <h1 class="page-title">Semesters</h1>
-<p class="mt-2 max-w-xl text-base">
+<p class="mt-1 max-w-xl text-sm text-muted">
   Create a semester, then open it. A closed semester stays on this list and cannot be changed. Dates use
   {{ zoneCaption() }}.
 </p>
 
-<form class="mt-6 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+<form class="cb-form mt-6 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <label class="cb-label" for="semester-name">Name</label>
   <input id="semester-name" type="text" formControlName="name" [attr.maxlength]="limits.name" class="cb-input" />
   @if (form.controls.name.touched && form.controls.name.invalid) {
@@ -42,7 +42,10 @@
 } @else if (loading() && items().length === 0) {
   <p class="mt-8 text-base">Please wait…</p>
 } @else if (items().length === 0) {
-  <p class="mt-8 text-base">No semesters yet.</p>
+  <div class="cb-empty">
+    <p class="font-semibold text-slate">No semesters yet</p>
+    <p class="mt-1 text-sm text-muted">Add a semester, then open it so lecturers can log sessions.</p>
+  </div>
 } @else {
   <ul class="mt-8 space-y-3 lg:hidden">
     @for (semester of items(); track semester.id) {
@@ -77,7 +80,7 @@
     }
   </ul>
 
-  <table class="mt-8 hidden w-full border-collapse lg:table">
+  <table class="cb-sheet mt-8 hidden w-full border-collapse lg:table">
     <thead>
       <tr>
         <th class="cb-th">Name</th>

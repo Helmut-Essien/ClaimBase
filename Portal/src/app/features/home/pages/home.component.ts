@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
@@ -24,6 +24,9 @@ export class HomeComponent {
 
   /** Tenant admins and admins can open a semester. Other roles cannot call that API. */
   readonly canSetup = canManageSetup(this.auth.profile()?.role);
+
+  /** Signed-in name for the home greeting. */
+  readonly displayName = computed(() => this.auth.profile()?.displayName ?? '');
 
   /** Name of the open semester, once the list returns. */
   readonly openSemester = signal<string | null>(null);

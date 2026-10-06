@@ -1,17 +1,26 @@
-<h1 class="page-title">Staff</h1>
-<p class="mt-2 max-w-xl text-base">
-  People who can be claimed, part-time and full-time. A lecturer belongs to at least one department and may belong to more.
-</p>
+<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div>
+    <h1 class="page-title">Staff</h1>
+    <p class="mt-1 max-w-xl text-sm text-muted">
+      People who can be claimed, part-time and full-time. A lecturer belongs to at least one department and may belong to more.
+    </p>
+  </div>
+  @if (panel() === 'list') {
+    <button type="button" class="cb-button cb-button-primary cb-button-block shrink-0" (click)="startCreate()">Add lecturer</button>
+  }
+</div>
 
 @if (panel() === 'list') {
-  <button type="button" class="cb-button cb-button-primary cb-button-block mt-6" (click)="startCreate()">Add lecturer</button>
 
   @if (loadError()) {
     <p class="cb-banner" role="alert">{{ loadError() }}</p>
   } @else if (loading() && items().length === 0) {
     <p class="mt-8 text-base">Please wait…</p>
   } @else if (items().length === 0) {
-    <p class="mt-8 text-base">No lecturers yet.</p>
+    <div class="cb-empty">
+      <p class="font-semibold text-slate">No lecturers yet</p>
+      <p class="mt-1 text-sm text-muted">Add the first person who can be claimed.</p>
+    </div>
   } @else {
     <ul class="mt-8 space-y-3 lg:hidden">
       @for (staff of items(); track staff.id) {
@@ -28,7 +37,7 @@
         </li>
       }
     </ul>
-    <table class="mt-8 hidden w-full border-collapse lg:table">
+    <table class="cb-sheet mt-8 hidden w-full border-collapse lg:table">
       <thead>
         <tr>
           <th class="cb-th">Name</th>

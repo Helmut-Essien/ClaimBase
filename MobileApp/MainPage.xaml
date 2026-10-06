@@ -2,19 +2,100 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ClaimBase.MobileApp.MainPage"
-             BackgroundColor="#F4F1EA">
+             Shell.NavBarIsVisible="False">
 
-    <VerticalStackLayout Padding="24" Spacing="12" VerticalOptions="Center">
-        <Label
-            Text="ClaimBase"
-            FontSize="28"
-            FontAttributes="Bold"
-            TextColor="#1B3A4B"
-            SemanticProperties.HeadingLevel="Level1" />
-        <Label
-            Text="Lecturer sign-in and session logging open in a later release."
-            FontSize="16"
-            TextColor="#1C1917" />
-    </VerticalStackLayout>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Purple wash matches the AssetTag sign-in screen. -->
+            <LinearGradientBrush x:Key="LoginGradient" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Offset="0.0" Color="{StaticResource Primary}" />
+                <GradientStop Offset="1.0" Color="{StaticResource Tertiary}" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid Background="{StaticResource LoginGradient}">
+        <!-- Circles are decoration. They stay out of the accessibility tree. -->
+        <AbsoluteLayout AutomationProperties.IsInAccessibleTree="False">
+            <BoxView
+                AbsoluteLayout.LayoutBounds="0, 0, 200, 200"
+                BackgroundColor="White"
+                CornerRadius="100"
+                Opacity="0.1"
+                TranslationX="-100"
+                TranslationY="-100" />
+            <BoxView
+                AbsoluteLayout.LayoutBounds="1, 0, 150, 150"
+                AbsoluteLayout.LayoutFlags="PositionProportional"
+                BackgroundColor="White"
+                CornerRadius="75"
+                Opacity="0.08"
+                TranslationX="50"
+                TranslationY="-50" />
+            <BoxView
+                AbsoluteLayout.LayoutBounds="1, 1, 180, 180"
+                AbsoluteLayout.LayoutFlags="PositionProportional"
+                BackgroundColor="White"
+                CornerRadius="90"
+                Opacity="0.12"
+                TranslationX="80"
+                TranslationY="80" />
+        </AbsoluteLayout>
+
+        <ScrollView VerticalOptions="Fill">
+            <VerticalStackLayout Padding="30,40" Spacing="16" VerticalOptions="Center">
+                <Border
+                    Padding="12"
+                    BackgroundColor="White"
+                    HeightRequest="88"
+                    HorizontalOptions="Center"
+                    StrokeThickness="0"
+                    WidthRequest="88">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+                    <Label
+                        FontAttributes="Bold"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="24"
+                        HorizontalOptions="Center"
+                        Text="CB"
+                        TextColor="{StaticResource Primary}"
+                        VerticalOptions="Center" />
+                </Border>
+
+                <VerticalStackLayout Spacing="4">
+                    <Label
+                        FontFamily="OpenSansSemibold"
+                        FontSize="24"
+                        HorizontalTextAlignment="Center"
+                        SemanticProperties.HeadingLevel="Level1"
+                        Text="ClaimBase"
+                        TextColor="White" />
+                    <Label
+                        FontFamily="OpenSansRegular"
+                        FontSize="14"
+                        HorizontalTextAlignment="Center"
+                        Text="Lecturer claims for the sessions you log."
+                        TextColor="White" />
+                </VerticalStackLayout>
+
+                <Border
+                    Margin="0,8,0,0"
+                    Padding="24,24,24,16"
+                    BackgroundColor="White"
+                    StrokeThickness="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+                    <Label
+                        FontFamily="OpenSansRegular"
+                        FontSize="14"
+                        Text="Lecturer sign-in and session logging open in a later release."
+                        TextColor="{StaticResource TextPrimary}" />
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 
 </ContentPage>

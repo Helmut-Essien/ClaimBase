@@ -1,64 +1,90 @@
 <div class="min-h-dvh bg-paper text-slate">
-  <!-- Phones keep a top bar. The sidebar replaces it from lg, so landscape phones still use this bar. -->
+  <!-- Phone bar only. From lg the sidebar is the chrome, so this bar is hidden. It is inert while the drawer covers the page. -->
   <header
-    class="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 bg-ink px-4 pt-[env(safe-area-inset-top)] text-paper lg:hidden"
+    class="sticky top-0 z-30 flex min-h-14 items-center gap-3 border-b border-paper-border bg-white px-4 pt-[env(safe-area-inset-top)] lg:hidden"
+    [attr.inert]="navOpen() && !wide() ? '' : null"
   >
-    <p class="font-semibold tracking-tight">ClaimBase</p>
-    <p class="min-w-0 flex-1 truncate text-center text-sm">{{ tenantName() }}</p>
     <button
       type="button"
-      class="inline-flex h-11 items-center px-3 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
-      (click)="signOut()"
+      class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+      [attr.aria-expanded]="navOpen()"
+      aria-controls="portal-nav"
+      [attr.aria-label]="navOpen() ? 'Close menu' : 'Open menu'"
+      (click)="toggleNav()"
     >
-      Sign out
+      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        @if (navOpen()) {
+          <path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" />
+        } @else {
+          <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+        }
+      </svg>
     </button>
+    <div class="min-w-0">
+      <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink">ClaimBase</p>
+      <p class="truncate text-sm font-bold text-slate">{{ tenantName() }}</p>
+    </div>
   </header>
 
-  <aside class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-paper-border bg-white lg:flex">
-    <div class="border-b border-paper-border px-4 py-6">
-      <p class="font-semibold tracking-tight text-ink">ClaimBase</p>
-      <p class="mt-2 truncate text-sm text-muted">{{ tenantName() }}</p>
+  @if (navOpen() && !wide()) {
+    <div class="fixed inset-0 z-40 bg-slate/40 lg:hidden" (click)="closeNav()"></div>
+  }
+
+  <!-- Off-canvas below lg. styles.css pins #portal-nav open from lg, so a closed drawer does not hide the desktop sidebar. -->
+  <aside
+    id="portal-nav"
+    class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-paper-border bg-white transition-transform duration-200 motion-reduce:transition-none"
+    [class.-translate-x-full]="!navOpen()"
+    [attr.inert]="wide() || navOpen() ? null : ''"
+    [attr.role]="navOpen() && !wide() ? 'dialog' : null"
+    [attr.aria-modal]="navOpen() && !wide() ? 'true' : null"
+    aria-label="Menu"
+    (keydown)="trapFocus($event)"
+  >
+    <div
+      class="flex items-start justify-between gap-3 border-b border-paper-border px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-6"
+    >
+      <div class="min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-ink">ClaimBase</p>
+        <p class="mt-1 text-lg font-bold leading-snug text-slate">{{ tenantName() }}</p>
+      </div>
+      <button
+        id="portal-nav-close"
+        type="button"
+        class="inline-flex h-11 shrink-0 items-center rounded-xl px-3 text-sm font-semibold text-muted hover:bg-paper hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink lg:hidden"
+        (click)="closeNav()"
+      >
+        Close
+      </button>
     </div>
-    <nav class="flex flex-1 flex-col gap-1 px-3 py-4">
+    <nav class="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
       @for (link of links(); track link.path) {
         <a
-          class="nav-link inline-flex h-11 items-center rounded-md px-3 text-sm font-semibold"
+          class="nav-link inline-flex h-11 items-center rounded-xl px-4 text-sm font-semibold"
           [routerLink]="link.path"
           routerLinkActive="nav-active"
           [routerLinkActiveOptions]="{ exact: link.exact }"
           ariaCurrentWhenActive="page"
+          (click)="closeNav()"
           >{{ link.label }}</a
         >
       }
     </nav>
-    <button
-      type="button"
-      class="m-3 inline-flex h-11 items-center px-3 text-sm font-semibold text-ink"
-      (click)="signOut()"
-    >
-      Sign out
-    </button>
+    <div class="border-t border-paper-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <button
+        type="button"
+        class="inline-flex h-11 w-full items-center rounded-xl px-4 text-left text-sm font-semibold text-muted hover:bg-paper hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        (click)="signOut()"
+      >
+        Sign out
+      </button>
+    </div>
   </aside>
 
-  <!-- Bottom nav stays until lg. Content padding includes this bar and the home-indicator inset. -->
-  <nav
-    class="fixed inset-x-0 bottom-0 z-30 border-t border-paper-border bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+  <main
+    class="px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:px-8 md:py-8 lg:ml-64"
+    [attr.inert]="navOpen() && !wide() ? '' : null"
   >
-    <div class="flex gap-1 overflow-x-auto px-2">
-      @for (link of links(); track link.path) {
-        <a
-          class="nav-link inline-flex h-11 shrink-0 items-center px-3 text-sm font-semibold"
-          [routerLink]="link.path"
-          routerLinkActive="nav-active"
-          [routerLinkActiveOptions]="{ exact: link.exact }"
-          ariaCurrentWhenActive="page"
-          >{{ link.label }}</a
-        >
-      }
-    </div>
-  </nav>
-
-  <main class="px-4 py-6 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:ml-64 lg:pb-8">
     <div class="mx-auto max-w-[1280px]">
       <router-outlet />
     </div>

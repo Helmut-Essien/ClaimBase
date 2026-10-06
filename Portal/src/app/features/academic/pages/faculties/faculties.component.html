@@ -1,18 +1,18 @@
 <h1 class="page-title">Faculties</h1>
-<p class="mt-2 max-w-xl text-base">
+<p class="mt-1 max-w-xl text-sm text-muted">
   A faculty belongs to one campus. The same name may be used on another campus. Each faculty owns its departments.
 </p>
 
 @if (loadingCampuses()) {
   <p class="mt-6 text-base">Please wait…</p>
 } @else if (campuses().length === 0) {
-  <p class="mt-6 max-w-xl text-base">
-    No campuses yet.
-    <a class="font-semibold text-ink underline" routerLink="/app/campuses">Add a campus</a>
-    before adding a faculty.
-  </p>
+  <div class="cb-empty">
+    <p class="font-semibold text-slate">No campuses yet</p>
+    <p class="mt-1 text-sm text-muted">Add a campus before adding a faculty.</p>
+    <a class="cb-button cb-button-primary mt-4" routerLink="/app/campuses">Add a campus</a>
+  </div>
 } @else {
-  <form class="mt-6 max-w-xl" [formGroup]="facultyForm" (ngSubmit)="submitFaculty()" novalidate>
+  <form class="cb-form mt-6 max-w-xl" [formGroup]="facultyForm" (ngSubmit)="submitFaculty()" novalidate>
     <label class="cb-label" for="faculty-campus">Campus</label>
     <select id="faculty-campus" formControlName="campusId" class="cb-input">
       @for (campus of campuses(); track campus.id) {
@@ -60,7 +60,10 @@
 } @else if (campuses().length > 0 && loadingFaculties() && faculties().length === 0) {
   <p class="mt-8 text-base">Please wait…</p>
 } @else if (campuses().length > 0 && faculties().length === 0) {
-  <p class="mt-8 text-base">No faculties yet.</p>
+  <div class="cb-empty">
+    <p class="font-semibold text-slate">No faculties yet</p>
+    <p class="mt-1 text-sm text-muted">Add a faculty on the campus you selected.</p>
+  </div>
 } @else if (faculties().length > 0) {
   <!-- Desktop keeps the faculty and its departments side by side. Phones stack the department list under the selection. -->
   <div class="mt-8 lg:grid lg:grid-cols-2 lg:gap-8">

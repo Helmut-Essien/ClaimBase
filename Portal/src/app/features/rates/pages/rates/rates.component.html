@@ -1,11 +1,11 @@
 <h1 class="page-title">Rates</h1>
-<p class="mt-2 max-w-xl text-base">
+<p class="mt-1 max-w-xl text-sm text-muted">
   This schedule belongs to the university, not to a semester or a campus. An amount with no end date keeps applying in
   later semesters. Dates with no row are omitted from claims. They are not stored as zero. Dates use {{ zoneCaption() }}.
 </p>
 
 <h2 class="mt-8 text-lg font-semibold text-ink">Teaching rates</h2>
-<p class="mt-2 max-w-xl text-base">Cedis per hour for one position and one qualification. Saving a cell adds one row.</p>
+<p class="mt-1 max-w-xl text-sm text-muted">Cedis per hour for one position and one qualification. Saving a cell adds one row.</p>
 
 @if (catalogError()) {
   <p class="cb-banner" role="alert">{{ catalogError() }}</p>
@@ -72,7 +72,7 @@
   </div>
 }
 
-<form class="mt-6 max-w-xl" [formGroup]="teachingForm" (ngSubmit)="submitTeaching()" novalidate>
+<form class="cb-form mt-6 max-w-xl" [formGroup]="teachingForm" (ngSubmit)="submitTeaching()" novalidate>
   <div class="grid gap-3 sm:grid-cols-2">
     <div>
       <label class="cb-label" for="teaching-title">Position</label>
@@ -179,11 +179,11 @@
 }
 
 <h2 class="mt-10 text-lg font-semibold text-ink">Transport</h2>
-<p class="mt-2 max-w-xl text-base">
+<p class="mt-1 max-w-xl text-sm text-muted">
   Paid once per teaching day, for every position. It is not an hourly rate. A day with no row is omitted from the claim.
 </p>
 
-<form class="mt-6 max-w-xl" [formGroup]="transportForm" (ngSubmit)="submitTransport()" novalidate>
+<form class="cb-form mt-6 max-w-xl" [formGroup]="transportForm" (ngSubmit)="submitTransport()" novalidate>
   <label class="cb-label" for="transport-amount">Cedis per teaching day</label>
   <input id="transport-amount" class="cb-input tabular-nums" type="text" inputmode="decimal" formControlName="amount" />
   @if (transportForm.controls.amount.touched && transportForm.controls.amount.invalid) {

@@ -28,6 +28,20 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- Same semantic tokens as the AssetTag mobile app. -->
+    <Color x:Key="AppBlue">#005A9C</Color>
+    <Color x:Key="PageBackground">#F8F9FA</Color>
+    <Color x:Key="PageBackgroundDark">#1f1f1f</Color>
+    <Color x:Key="CardBackground">#FFFFFF</Color>
+    <Color x:Key="CardBackgroundDark">#2a2a2a</Color>
+    <Color x:Key="TextPrimary">#333333</Color>
+    <Color x:Key="TextPrimaryDark">#FFFFFF</Color>
+    <Color x:Key="TextSecondary">#666666</Color>
+    <Color x:Key="TextSecondaryDark">#C8C8C8</Color>
+    <Color x:Key="ErrorBackground">#FFEBEE</Color>
+    <Color x:Key="ErrorBorder">#EF5350</Color>
+    <Color x:Key="ErrorText">#C62828</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>

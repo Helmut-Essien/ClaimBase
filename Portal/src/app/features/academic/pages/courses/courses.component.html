@@ -1,11 +1,11 @@
 <h1 class="page-title">Courses</h1>
-<p class="mt-2 max-w-xl text-base">
+<p class="mt-1 max-w-xl text-sm text-muted">
   Qualifications and courses are shared by the university. A lecturer's position is recorded on the staff page, not here.
 </p>
 
 <section class="mt-8 max-w-xl">
   <h2 class="text-lg font-semibold text-ink">Qualifications</h2>
-  <form class="mt-4" [formGroup]="qualificationForm" (ngSubmit)="submitQualification()" novalidate>
+  <form class="cb-form mt-4" [formGroup]="qualificationForm" (ngSubmit)="submitQualification()" novalidate>
     <label class="cb-label" for="qualification-name">Name</label>
     <input
       id="qualification-name"
@@ -30,7 +30,10 @@
   } @else if (loadingQualifications() && qualifications().length === 0) {
     <p class="mt-6 text-base">Please wait…</p>
   } @else if (qualifications().length === 0) {
-    <p class="mt-6 text-base">No qualifications yet.</p>
+    <div class="cb-empty">
+      <p class="font-semibold text-slate">No qualifications yet</p>
+      <p class="mt-1 text-sm text-muted">Add Diploma, Degree, or the names this university uses.</p>
+    </div>
   } @else {
     <ul class="mt-6 space-y-3">
       @for (qualification of qualifications(); track qualification.id) {
@@ -53,7 +56,7 @@
   } @else if (choices().length === 0) {
     <p class="mt-4 text-base">Add a qualification before adding a course.</p>
   } @else {
-    <form class="mt-4" [formGroup]="courseForm" (ngSubmit)="submitCourse()" novalidate>
+    <form class="cb-form mt-4" [formGroup]="courseForm" (ngSubmit)="submitCourse()" novalidate>
       <label class="cb-label" for="course-code">Code</label>
       <input
         id="course-code"
@@ -99,7 +102,10 @@
   } @else if (loadingCourses() && courses().length === 0) {
     <p class="mt-6 text-base">Please wait…</p>
   } @else if (courses().length === 0) {
-    <p class="mt-6 text-base">No courses yet.</p>
+    <div class="cb-empty">
+      <p class="font-semibold text-slate">No courses yet</p>
+      <p class="mt-1 text-sm text-muted">Add a course code so lecturers can log a session against it.</p>
+    </div>
   } @else {
     <ul class="mt-6 space-y-3 lg:hidden">
       @for (course of courses(); track course.id) {
@@ -111,7 +117,7 @@
         </li>
       }
     </ul>
-    <table class="mt-6 hidden w-full border-collapse lg:table">
+    <table class="cb-sheet mt-6 hidden w-full border-collapse lg:table">
       <thead>
         <tr>
           <th class="cb-th">Code</th>

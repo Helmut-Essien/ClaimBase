@@ -1,16 +1,16 @@
 ---
 name: claimbase-design-system
 description: >-
-  ClaimBase visual design system: Ink, Copper, and Paper tokens, Source Sans 3,
-  restrained grain on brand panels, elevation, buttons, cards, forms, and
-  status chips. Custom CSS includes a short comment saying why the rule
-  exists. Use when styling the Angular Portal, auth, claim tables, or
-  brand/visual work.
+  ClaimBase visual design system learned from the AssetTag mobile app:
+  AppBlue chrome, purple gradient actions, Open Sans, white cards on a gray
+  page, and a gradient sign-in screen. Custom CSS includes a short comment
+  saying why the rule exists. Use when styling the Angular Portal, the MAUI
+  lecturer app, auth, claim tables, or brand/visual work.
 ---
 
 # ClaimBase Design System
 
-Visual source of truth for the Portal. Implement in `Portal/` with Tailwind and Source Sans 3. Token tables: [tokens.md](tokens.md). Atmosphere: [atmosphere.md](atmosphere.md). Layout and screens: [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
+Visual source of truth for the Portal and the lecturer app. It follows the AssetTag mobile app: AppBlue bars, a purple sign-in gradient, Open Sans, and white cards on `#F8F9FA`. Implement the Portal in `Portal/` with Tailwind. Implement MAUI in `MobileApp/Resources/Styles`. Token tables: [tokens.md](tokens.md). Atmosphere: [atmosphere.md](atmosphere.md). Layout and screens: [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
 
 ## Design intent
 
@@ -19,46 +19,48 @@ ClaimBase is a **calm university ledger**: clear enough for Finance to approve a
 | Trait | Design implication |
 |-------|-------------------|
 | Accountable | Status, amounts, and omitted rows are visible. Approved claims look frozen. |
-| Calm | Paper canvas, ink text, one copper accent |
-| Efficient | 44px targets, one primary action per view |
-| Distinct | Brand panels use ink and copper. Data tables stay plain white. |
+| Clear | Gray page, white cards, AppBlue headers |
+| Efficient | 48px targets, one primary action per view |
+| Distinct | Sign-in uses the purple gradient. Data tables stay plain white. |
 
 ## Core palette
 
 | Role | Hex | Tailwind |
 |------|-----|----------|
-| Ink | `#1B3A4B` | `ink` |
-| Ink dark | `#122836` | `ink-dark` |
-| Copper | `#C46B3A` | `copper` |
-| Copper dark | `#A3562C` | `copper-dark` |
-| Paper | `#F4F1EA` | `paper` |
-| Paper border | `#E4DDD2` | `paper-border` |
-| Slate | `#1C1917` | `slate` |
+| AppBlue | `#005A9C` | `ink` |
+| AppBlue dark | `#004578` | `ink-dark` |
+| Primary | `#512BD4` | `primary` |
+| Primary dark | `#2B0B98` | `primary-dark` |
+| Page | `#F8F9FA` | `paper` |
+| Card border | `#EEEEEE` | `paper-border` |
+| Text | `#333333` | `slate` |
 | White | `#FFFFFF` | `white` |
-| Success | `#2F6F4E` | `success` |
-| Warning | `#A16207` | `warning` |
-| Error | `#B91C1C` | `error` |
-| Muted | `#64748B` | `muted` |
+| Success | `#7CB342` | `success` |
+| Warning | `#FF9800` | `warning` |
+| Error | `#C62828` | `error` |
+| Muted | `#666666` | `muted` |
+
+`ink` and `copper` remain as Tailwind names so existing templates keep compiling. `ink` is AppBlue. `copper` is the same purple as `primary`.
 
 **Rules**
 
-- **Ink** — wordmark, nav active, primary buttons, login brand panel.
-- **Copper** — the single high-intent action on a page (`Build claim`, `Download PDF`). Not Save, not Sign in.
-- **Paper** — page background. Cards are white.
-- Shadows are ink-tinted: `0 2px 8px rgba(27, 58, 75, 0.08)`.
+- **AppBlue** — wordmark bar, active navigation, list-card edge, links.
+- **Primary purple** — Sign in, Save, and other filled buttons. The fill is a left-to-right gradient from `#512BD4` to `#2B0B98`.
+- **Page** — `#F8F9FA`. Cards are white with a 12px radius and a 4px AppBlue left edge.
+- Shadows are a light gray lift: `0 1px 3px rgba(0, 0, 0, 0.08)`.
 
 ## Atmosphere
 
-Grain and a light dot-mesh belong on the login brand panel only. Recipes: [atmosphere.md](atmosphere.md). Tables, rate cells, and forms stay flat.
+The sign-in brand panel is a flat purple gradient. The form sits on the page canvas. Recipes: [atmosphere.md](atmosphere.md). Tables, rate cells, and forms stay flat.
 
 ## Typography
 
-Source Sans 3 for the whole Portal, including login. Hierarchy is weight and size.
+Open Sans for the Portal and the lecturer app. Hierarchy is weight and size.
 
 | Token | Size / weight | Use |
 |-------|---------------|-----|
-| headline-lg | 28px / 700 | Page titles |
-| headline-md | 22px / 600 | Dialogs, claim lecturer name |
+| headline-lg | 24px / 700 | Sign-in welcome |
+| headline-md | 20px / 600 | Page titles, blue-bar titles |
 | body-md | 16px / 400 | Inputs and body |
 | body-sm | 14px / 400 | Table cells |
 | label-sm | 12px / 600 / 0.05em | Field labels, column headers |
@@ -68,8 +70,8 @@ Use monospace for course codes and staff numbers. Amounts use the body face, tab
 ## Layout
 
 - 4px base unit. Mobile margin 16px. Content max 1280px.
-- App sidebar at `lg+` only.
-- Radius: inputs `rounded-md`, cards `rounded-lg`, status `rounded-full`.
+- One sidebar: a drawer below `lg`, fixed open from `lg`. No bottom nav.
+- Radius: inputs and buttons 20px, list cards 12px, chips 16px, status pills fully round.
 - Primary and copper actions are `w-full` until `sm`.
 
 ## Components
@@ -78,12 +80,11 @@ Use monospace for course codes and staff numbers. Amounts use the body face, tab
 
 | Variant | Style | When |
 |---------|--------|------|
-| Primary | Ink background, white text | Sign in, Save, Open semester |
-| Accent | Copper background, white text | Build claim, Download PDF |
-| Secondary | Ink outline | Cancel, Return claim |
+| Primary | Purple gradient, white text, 20px radius | Sign in, Save, Open semester, Build claim, Download PDF |
+| Secondary | Purple outline | Cancel, Return claim |
 | Ghost | Muted text | Toolbar |
 
-Solid fills. No gradient buttons.
+Primary buttons use the gradient. Do not fill every control with AppBlue.
 
 ### Status chips
 
@@ -100,25 +101,25 @@ Amount text stays `slate` whether or not the checkmark is set.
 
 ### Forms and tables
 
-- Labels above fields. Focus ring uses ink.
+- Labels above fields, 14px semibold, sentence case. Focus ring uses primary purple.
 - Errors: tinted banner plus the field message.
 - Desktop tables: small-caps-style headers (`label-sm`), hairline dividers.
 - Below `lg`: one card per row.
 
 ## Anti-patterns
 
-- Forest/gold retail palette, purple gradients, or pure-white page backgrounds
-- Copper on every button
+- Beige paper, copper buttons, or a split ink login panel
+- AppBlue on every button
 - Texture on the rate matrix or claim lines
 - Coloring a row red because the biometric device has no punch
 - Dark mode as the default
 
 ## Ship checklist
 
-- [ ] Paper page, white cards, ink primary, copper only for claim/PDF actions
-- [ ] Source Sans 3
+- [ ] Gray page, white cards with an AppBlue edge, purple gradient primary buttons
+- [ ] Open Sans
 - [ ] Presence mark does not recolor the amount
 - [ ] 44px targets and safe-area padding
 - [ ] `prefers-reduced-motion` respected if any brand motion is added
 - [ ] Production component CSS stays inside the Angular budget
-- [ ] Custom CSS comments say why the rule exists (token mapping, grain only on the login panel, reduced motion)
+- [ ] Custom CSS comments say why the rule exists (token mapping, gradient only on the sign-in brand panel, reduced motion)

@@ -8,6 +8,9 @@ import { AUTH_FIELD_LIMITS } from '../../../../core/auth/auth.models';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { requiredTrimmed } from '../../../../shared/validators/required-trimmed';
 
+/** Browser key for the last email typed on this sign-in form. The password is never stored. */
+export const LOGIN_DRAFT_KEY = 'claimbase.login-draft';
+
 /**
  * Staff sign-in. There is no signup. A lecturer response is cleared and the mobile-app message is shown.
  */
@@ -34,8 +37,16 @@ export class LoginComponent {
   /** True when the API returned a lecturer role. */
   readonly lecturerBlocked = this.auth.lecturerBlocked;
 
+  /** False keeps the password masked and shows the closed eye. */
+  readonly passwordVisible = signal(false);
+
+  /** Switches the password field between masked and visible. */
+  togglePassword(): void {
+    this.passwordVisible.update((visible) => !visible);
+  }
+
   readonly form = inject(FormBuilder).nonNullable.group({
-    email: ['', [requiredTrimmed(), trimmedEmail(), Validators.maxLength(AUTH_FIELD_LIMITS.email)]],
+    email: [readSavedEmail(), [requiredTrimmed(), trimmedEmail(), Validators.maxLength(AUTH_FIELD_LIMITS.email)]],
     password: [
       '',
       [
@@ -45,6 +56,20 @@ export class LoginComponent {
       ],
     ],
   });
+
+  constructor() {
+    // Only the email is restored. A password in an older draft is removed on this visit.
+    this.form.controls.email.valueChanges.pipe(takeUntilDestroyed()).subscribe((email) => this.rememberEmail(email));
+  }
+
+  /** Writes the email so the next visit can fill it in. */
+  private rememberEmail(email: string): void {
+    try {
+      localStorage.setItem(LOGIN_DRAFT_KEY, JSON.stringify({ email }));
+    } catch {
+      // Private browsing can refuse storage. Sign-in still works for this visit.
+    }
+  }
 
   /** Trims and lowercases the email, then signs in. */
   submit(): void {
@@ -80,6 +105,22 @@ export class LoginComponent {
           );
         },
       });
+  }
+}
+
+/** Last email saved in this browser. Rewrites the entry so a previously stored password is dropped. */
+function readSavedEmail(): string {
+  try {
+    const raw = localStorage.getItem(LOGIN_DRAFT_KEY);
+    if (!raw) {
+      return '';
+    }
+    const parsed = JSON.parse(raw) as { email?: unknown };
+    const email = typeof parsed.email === 'string' ? parsed.email : '';
+    localStorage.setItem(LOGIN_DRAFT_KEY, JSON.stringify({ email }));
+    return email;
+  } catch {
+    return '';
   }
 }
 

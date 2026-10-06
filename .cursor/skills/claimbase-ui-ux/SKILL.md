@@ -1,7 +1,7 @@
 ---
 name: claimbase-ui-ux
 description: >-
-  ClaimBase Portal UI/UX: role-based shell (bottom nav until lg, sidebar lg+),
+  ClaimBase Portal UI/UX: role-based shell (collapsible sidebar on a phone, fixed sidebar from lg),
   iOS safe areas, login, academic setup, rate matrix, session lists, claim
   review, biometric import, and PDF download. Biometric checkmarks are
   informational.   Form limits mirror backend Shared DTOs. Generated Portal code includes
@@ -25,14 +25,14 @@ Visual tokens: [claimbase-design-system](../claimbase-design-system/SKILL.md). S
 
 ## Responsive shell
 
-Chrome lives in `core/layout`. Feature pages do not add a second app bar or bottom nav.
+Chrome lives in `core/layout`. Feature pages do not add a second app bar or their own sidebar.
 
 | Breakpoint | Shell |
 |------------|--------|
-| Below `lg` | Sticky top bar (wordmark, tenant name, 44px sign out). Bottom nav for routes that exist. Content padding includes `env(safe-area-inset-bottom)`. |
-| `lg+` | Fixed sidebar `w-64`. No bottom nav. Content max width 1280px. |
+| Below `lg` | White top bar: menu button, ClaimBase as a small label, the university name in bold. The menu opens the same sidebar as an off-canvas drawer (backdrop, Close, Escape). Sign out sits at the bottom of that drawer. |
+| `lg+` | The sidebar stays open, `w-64`. There is no top bar and no menu button. Active route is filled AppBlue. Sign out sits at the bottom of the sidebar. Content max width 1280px. |
 
-Sidebar starts at `lg` (1024px), not `md`, so landscape phones keep the bottom nav.
+The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin it open at `md`, and do not add a bottom nav. While the drawer is open, the page behind it is inert.
 
 `index.html` viewport includes `viewport-fit=cover`. Sticky bars pad `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`. Touch targets are at least 44×44px. Truncate tenant and course names.
 
@@ -55,9 +55,10 @@ Sidebar starts at `lg` (1024px), not `md`, so landscape phones keep the bottom n
 
 ### Login
 
-- Split layout from `lg`: brand panel and form.
+- Split layout from `lg`: purple brand panel and the form on the page canvas.
 - Below `lg`: brand block capped near `42svh` so the form is on screen.
-- Email and password. No license key. No self-service signup in MVP (users are created for the tenant).
+- Email and password. The password starts masked, with a closed-eye control that reveals it.
+- No license key. No self-service signup in MVP (users are created for the tenant).
 - Lecturer JWTs that hit the Portal are signed out with a short message to use the mobile app.
 
 ### Home
@@ -131,8 +132,8 @@ Sidebar starts at `lg` (1024px), not `md`, so landscape phones keep the bottom n
 
 - A pay total that shrinks because the checkmark is empty
 - Recalculate button on an approved claim
-- Gold-style retail chrome from another product, or a navy "control plane" with path breadcrumbs as the brand
-- Sidebar at `md`
+- Beige paper, copper buttons, or a split ink login panel
+- A bottom nav, or a persistent sidebar below `lg`
 - Sticky bars without safe-area insets
 - Nav items for routes that are not implemented
 - Unpaged tables

@@ -1,29 +1,39 @@
 <h1 class="page-title">Home</h1>
+<p class="mt-1 max-w-xl text-sm text-muted">
+  @if (displayName()) {
+    Welcome, {{ displayName() }}.
+  }
+  Here is what needs attention.
+</p>
 
 @if (!canSetup) {
-  <p class="mt-3 max-w-xl text-base">An administrator opens the semester.</p>
+  <p class="mt-4 max-w-xl text-sm text-muted">An administrator opens the semester.</p>
 } @else if (loadingSemester()) {
-  <p class="mt-3 max-w-xl text-base">Please wait…</p>
+  <p class="mt-4 max-w-xl text-sm text-muted">Please wait…</p>
 } @else if (semesterError()) {
   <p class="cb-banner" role="alert">{{ semesterError() }}</p>
 } @else if (openSemester(); as name) {
-  <p class="mt-3 max-w-xl text-base">Open semester: {{ name }}.</p>
+  <p class="mt-4 max-w-xl text-sm text-muted">Open semester: {{ name }}.</p>
 } @else if (noOpenSemester()) {
-  <p class="mt-3 max-w-xl text-base">
-    No open semester.
-    <a class="font-semibold text-ink underline" routerLink="/app/semesters">Open one</a>
-    before lecturers can log sessions.
-  </p>
+  <div class="cb-empty">
+    <p class="font-semibold text-slate">No open semester</p>
+    <p class="mt-1 text-sm text-muted">Open one before lecturers can log sessions.</p>
+    <a class="cb-button cb-button-primary mt-4" routerLink="/app/semesters">Open a semester</a>
+  </div>
 }
 
-<dl class="mt-8 grid gap-4 sm:grid-cols-2">
+<dl class="mt-6 grid gap-4 sm:grid-cols-2">
   <div class="cb-card">
-    <dt class="text-sm">Claims awaiting you</dt>
-    <dd class="mt-1 text-2xl font-semibold text-ink">0</dd>
+    <dt class="text-sm text-muted">Claims awaiting you</dt>
+    <dd class="mt-1 text-2xl font-bold text-slate">0</dd>
   </div>
   <div class="cb-card">
-    <dt class="text-sm">Sessions omitted for a missing rate</dt>
-    <dd class="mt-1 text-2xl font-semibold text-ink">0</dd>
+    <dt class="text-sm text-muted">Sessions omitted for a missing rate</dt>
+    <dd class="mt-1 text-2xl font-bold text-slate">0</dd>
   </div>
 </dl>
-<p class="mt-8 text-base">No recent claims.</p>
+
+<div class="cb-empty">
+  <p class="font-semibold text-slate">No recent claims</p>
+  <p class="mt-1 text-sm text-muted">Claims appear here after a lecturer's sessions are built.</p>
+</div>
