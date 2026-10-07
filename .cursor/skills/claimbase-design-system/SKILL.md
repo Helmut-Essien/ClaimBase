@@ -3,7 +3,7 @@ name: claimbase-design-system
 description: >-
   ClaimBase visual design system learned from the AssetTag mobile app:
   AppBlue chrome, purple gradient actions, Open Sans, white cards on a gray
-  page, and a gradient sign-in screen. Custom CSS includes a short comment
+  page, and a centered gradient sign-in card. Custom CSS includes a short comment
   saying why the rule exists. Use when styling the Angular Portal, the MAUI
   lecturer app, auth, claim tables, or brand/visual work.
 ---
@@ -51,7 +51,7 @@ ClaimBase is a **calm university ledger**: clear enough for Finance to approve a
 
 ## Atmosphere
 
-The sign-in brand panel is a flat purple gradient. The form sits on the page canvas. Recipes: [atmosphere.md](atmosphere.md). Tables, rate cells, and forms stay flat.
+Sign-in is a centered card on the gray page, at most `max-w-6xl`. The page behind the card is a quiet AppBlue dot field. From `lg` the card splits about 42% brand and the rest form. Below `lg` the brand band stays near `42svh` so the form stays on screen. The brand panel is the purple gradient with two soft circles behind the wordmark, and it carries the university motto "Excellence • Morality • Service". The form is a white card on the gray half. Recipes: [atmosphere.md](atmosphere.md). Tables, rate cells, and forms stay flat.
 
 ## Typography
 
@@ -69,10 +69,10 @@ Use monospace for course codes and staff numbers. Amounts use the body face, tab
 
 ## Layout
 
-- 4px base unit. Mobile margin 16px. Content max 1280px.
+- 4px base unit. Mobile margin 16px. Content max 1280px. The sign-in card max is 1152px.
 - One sidebar: a drawer below `lg`, fixed open from `lg`. No bottom nav.
 - Radius: inputs and buttons 20px, list cards 12px, chips 16px, status pills fully round.
-- Primary and copper actions are `w-full` until `sm`.
+- Primary and copper actions are `w-full` until `sm`. Sign in stays full width inside its card.
 
 ## Components
 
@@ -101,22 +101,28 @@ Amount text stays `slate` whether or not the checkmark is set.
 
 ### Forms and tables
 
-- Labels above fields, 14px semibold, sentence case. Focus ring uses primary purple.
-- Errors: tinted banner plus the field message.
+- Labels above fields, 14px semibold, sentence case. Sign-in labels are 12px semibold. A text link may sit on the same row as the password label. Focus ring uses primary purple and appears on focus only.
+- Sign-in hints state real browser behavior: the last email is remembered, and the password is not stored.
+- Errors: tinted banner plus the field message. The hint stays associated with the field when the error is showing.
 - Desktop tables: small-caps-style headers (`label-sm`), hairline dividers.
 - Below `lg`: one card per row.
 
 ## Anti-patterns
 
 - Beige paper, copper buttons, or a split ink login panel
+- A sample audit period, ledger version, ACTIVE badge, or other invented figure on sign-in
+- A remember-me checkbox, TLS claim, or compliance link the product does not honor
+- A focus ring that stays on before the field is focused, or a sign-in control shorter than 44px
+- An icon-font CDN or a second typeface on the sign-in screen
 - AppBlue on every button
-- Texture on the rate matrix or claim lines
+- A dot field on the rate matrix, claim lines, or the sign-in card
 - Coloring a row red because the biometric device has no punch
 - Dark mode as the default
 
 ## Ship checklist
 
 - [ ] Gray page, white cards with an AppBlue edge, purple gradient primary buttons
+- [ ] Sign-in is a centered card: purple brand panel, white form, no sample ledger figures
 - [ ] Open Sans
 - [ ] Presence mark does not recolor the amount
 - [ ] 44px targets and safe-area padding

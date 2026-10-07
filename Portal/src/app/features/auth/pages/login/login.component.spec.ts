@@ -26,6 +26,9 @@ describe('LoginComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Lecturer claims from the sessions they log.');
     expect(compiled.textContent).toContain('University staff only.');
+    expect(compiled.textContent).toContain('Excellence • Morality • Service');
+    expect(compiled.querySelector('a[href="/login/forgot-password"]')?.textContent).toContain('Forgot password?');
+    expect(compiled.querySelector('#password-hint')?.textContent).toContain('not stored');
     const password = compiled.querySelector('#password') as HTMLInputElement;
     const toggle = compiled.querySelector('button[aria-label="Show password"]') as HTMLButtonElement;
     expect(password.type).toBe('password');
@@ -69,7 +72,7 @@ describe('LoginComponent', () => {
     const email = fixture.nativeElement.querySelector('#email') as HTMLInputElement;
 
     expect(email.getAttribute('aria-invalid')).toBe('true');
-    expect(email.getAttribute('aria-describedby')).toBe('email-error');
+    expect(email.getAttribute('aria-describedby')).toBe('email-hint email-error');
     expect(fixture.nativeElement.querySelector('#email-error')?.textContent).toContain('Enter a valid email.');
   });
 

@@ -1,0 +1,48 @@
+<!-- Dots stay on the page canvas. The card, the brand panel, and the form stay flat. -->
+<!-- Auto margins center the card when the screen is taller, and keep the crest reachable when the card is taller than the screen. -->
+<div
+  class="cb-signin-canvas flex min-h-dvh flex-col px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+>
+  <!-- Stronger than a list card: this is the only surface on the page. -->
+  <div
+    class="m-auto grid w-full max-w-6xl overflow-hidden rounded-xl bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)] lg:grid-cols-[42%_1fr]"
+  >
+    <!-- Phone: the band stays near 42svh and scrolls instead of pushing the form off screen. -->
+    <section
+      class="relative max-h-[42svh] overflow-hidden bg-linear-to-br from-primary to-primary-dark text-white lg:max-h-none lg:min-h-[32rem]"
+    >
+      <!-- Soft circles sit behind the wordmark. They are decoration, not a live status. -->
+      <div class="pointer-events-none absolute -top-16 -right-16 h-80 w-80 rounded-full bg-white/5 blur-2xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-black/10 blur-xl" aria-hidden="true"></div>
+      <div
+        class="cb-signin-band relative flex h-full max-h-[42svh] flex-col gap-6 overflow-y-auto px-6 py-6 lg:max-h-none lg:min-h-[32rem] lg:gap-8 lg:px-12 lg:py-14"
+      >
+        <div class="flex items-center gap-4">
+          <img
+            src="methodist-university-logo.jpeg"
+            alt="Methodist University Ghana"
+            width="72"
+            height="72"
+            class="h-14 w-14 shrink-0 rounded-2xl bg-white object-contain p-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] lg:h-[4.5rem] lg:w-[4.5rem]"
+          />
+          <div>
+            <p class="text-xs font-semibold tracking-[0.16em] text-white">PORTAL</p>
+            <p class="text-base font-semibold tracking-wide text-white">ClaimBase</p>
+          </div>
+        </div>
+        <div>
+          <!-- Methodist University Ghana motto. It stays with the crest so the form stays about credentials. -->
+          <p class="text-sm font-semibold tracking-wide text-white">Excellence • Morality • Service</p>
+          <h1 class="mt-4 max-w-sm text-2xl font-bold leading-tight">Lecturer claims from the sessions they log.</h1>
+          <p class="mt-3 max-w-sm text-sm leading-6 text-white/80">University staff only.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex items-center bg-paper px-4 py-8 sm:px-10 lg:px-14">
+      <div class="mx-auto w-full max-w-md">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+</div>

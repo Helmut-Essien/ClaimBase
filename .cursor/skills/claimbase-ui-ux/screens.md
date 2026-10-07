@@ -13,21 +13,44 @@ Design each screen for phone, tablet, and desktop. Same information architecture
 ### Purpose
 Day-to-day sign-in for tenant staff. Accounts are issued by a tenant admin.
 
+### Shell
+Centered card on `#F8F9FA`, max width 1152px, 12px radius. The page behind the card is a quiet AppBlue dot field (`cb-signin-canvas`). The brand panel is the purple gradient. Two soft circles sit behind the wordmark and are `aria-hidden`. The form sits in a flat white card on the gray half. Atmosphere: [../claimbase-design-system/atmosphere.md](../claimbase-design-system/atmosphere.md).
+
 ### Mobile
-- Brand block about `42svh`, safe-area padding, then the form.
-- Email, password, full-width primary Sign in.
+- Brand block about `42svh`, scrolling from the crest when the copy is taller than the band, then the form. Page padding includes safe-area insets.
+- Email, password, full-width primary Sign in. Fields are 48px with a leading icon. The focus ring shows only while the field is focused.
 - Password starts masked. The control shows a closed eye until it is pressed.
-- The last email typed in this browser is filled in on the next visit. The password is not stored.
-- The Methodist University Ghana crest from the AssetTag sign-in page sits on the brand panel.
+- Hint under the email: "This browser remembers the last email." Hint under the password: "The password is not stored in this browser."
+- The Methodist University Ghana crest sits in a white tile with a PORTAL eyebrow and the ClaimBase wordmark.
+- The university motto sits under that wordmark, one line: "Excellence • Morality • Service".
 
 ### Desktop (`lg+`)
-- Brand panel about 42% width. Form on the paper canvas.
-- Headline: "Lecturer claims from the sessions they log."
-- Trust line: "University staff only."
+- Brand panel about 42% width. Form card on the gray half.
+- Motto: "Excellence • Morality • Service". Headline: "Lecturer claims from the sessions they log." Trust line: "University staff only."
+- Title: "Sign in to ClaimBase". Supporting line: accounts are issued by a tenant admin.
 
 ### Content
-- No signup tab.
-- If the API returns a lecturer role, show "Use the ClaimBase mobile app" and clear the token.
+- No signup tab. No remember-me checkbox. No version string. No TLS or compliance link.
+- The motto stays on the brand panel. The form title stays "Sign in to ClaimBase", and the product sentence stays the level-1 heading.
+- Do not invent an audit period, an ACTIVE badge, or an office name such as "Office of the Bursar".
+- "Forgot password?" is on the password label row and routes to `/login/forgot-password`.
+- Sign in uses the full purple gradient from the first paint. It stays disabled until the email and password are valid, without fading that fill. While the request is in flight the label is "Please wait…".
+- A standing note, before any error, says lecturers log sessions in the mobile app and this portal is for university staff.
+- If the API returns a lecturer role, replace that note with "Use the ClaimBase mobile app" (`role="status"`, not the error banner) and clear the token.
+
+### Forgot password
+
+**Route:** `/login/forgot-password` (guest). Same shell as sign-in.
+
+Today there is no reset email. The page tells the staff member that a tenant admin sets the password, and the only action is "Back to sign in". It does not collect a new password and does not write the login draft.
+
+When reset email is implemented, replace that body and keep the route and the shell:
+
+- One email field, same `AUTH_FIELD_LIMITS` as sign-in. Submit lowercases the trimmed address. Prefill from the login draft is fine. Do not store a password.
+- Primary button: "Send reset link". While the request is in flight, disable it and show "Please wait…".
+- The confirmation is the same whether or not the address is on file: "If that email belongs to a staff account, a reset link is on its way."
+- "Back to sign in" becomes the text link. The purple button is the send action.
+- Choosing the new password is a later step on the link from that email. Same password limits. Nothing from that step is written to `localStorage`.
 
 ---
 

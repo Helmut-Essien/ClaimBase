@@ -55,11 +55,13 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 
 ### Login
 
-- Split layout from `lg`: purple brand panel and the form on the page canvas.
-- Below `lg`: brand block capped near `42svh` so the form is on screen.
-- Email and password. The password starts masked, with a closed-eye control that reveals it.
-- No license key. No self-service signup in MVP (users are created for the tenant).
-- Lecturer JWTs that hit the Portal are signed out with a short message to use the mobile app.
+- Centered card on the gray page. The page behind the card is a quiet AppBlue dot field. From `lg`, about 42% purple brand panel and the form on the gray half. The brand panel includes the university motto "Excellence • Morality • Service". Spec: [screens.md](screens.md).
+- Below `lg`: brand block capped near `42svh` so the form is on screen. Pad the page with safe-area insets.
+- Email and password, 48px fields, focus ring only while focused. The password starts masked, with a closed-eye control that reveals it.
+- Hints: this browser remembers the last email, and the password is not stored.
+- "Forgot password?" sits on the password label row and opens `/login/forgot-password`.
+- A standing note says lecturers use the mobile app. After a lecturer signs in, that note gives way to the status message and the token is cleared.
+- No license key. No self-service signup. No remember-me checkbox. Accounts are issued by a tenant admin.
 
 ### Home
 
@@ -133,6 +135,7 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 - A pay total that shrinks because the checkmark is empty
 - Recalculate button on an approved claim
 - Beige paper, copper buttons, or a split ink login panel
+- Sample ledger figures, a remember-me control, or a dead compliance link on sign-in
 - A bottom nav, or a persistent sidebar below `lg`
 - Sticky bars without safe-area insets
 - Nav items for routes that are not implemented

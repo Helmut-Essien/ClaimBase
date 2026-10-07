@@ -205,6 +205,7 @@ Portal/src/app/
 | Path | Guard | Slice |
 |------|-------|-------|
 | `/login` | guest | 1 |
+| `/login/forgot-password` | guest | 1 |
 | `/app` | auth, not Lecturer | 1 |
 | `/app/campuses`, `/app/faculties`, `/app/semesters`, `/app/courses`, `/app/staff` | Admin, TenantAdmin | 2 |
 | `/app/rates` | Admin, TenantAdmin | 3 |

@@ -60,5 +60,8 @@ Product aliases live in [SKILL.md](SKILL.md). Atmosphere recipes: [atmosphere.md
 
 | Level | CSS |
 |-------|-----|
+| Sign-in shell | `0 8px 24px rgba(0, 0, 0, 0.08)` |
 | Card | `0 1px 3px rgba(0, 0, 0, 0.08)` |
 | Card edge | `4px solid #005A9C` on the left |
+
+The sign-in shell is stronger than a list card because it is the only object on the page. List cards keep the light lift and the AppBlue left edge. The sign-in card does not use that edge.

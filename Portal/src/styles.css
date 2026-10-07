@@ -18,6 +18,22 @@
   --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Sign-in page only. A quiet dot field on the gray canvas; the card and every data surface stay flat. */
+.cb-signin-canvas {
+  background-color: var(--color-paper);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-ink) 42%, var(--color-paper)) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+
+/* Safe center keeps a short brand band centered, and lets overflow scroll from the crest. */
+.cb-signin-band {
+  justify-content: safe center;
+}
+
 /* Page titles match a product headline: one line, then a muted explanation. */
 .page-title {
   font-size: 1.5rem;

@@ -2,21 +2,23 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AUTH_FIELD_LIMITS } from '../../../../core/auth/auth.models';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { requiredTrimmed } from '../../../../shared/validators/required-trimmed';
+import { AuthShellComponent } from '../auth-shell/auth-shell.component';
 
 /** Browser key for the last email typed on this sign-in form. The password is never stored. */
 export const LOGIN_DRAFT_KEY = 'claimbase.login-draft';
 
 /**
  * Staff sign-in. There is no signup. A lecturer response is cleared and the mobile-app message is shown.
+ * Forgot password leaves this form for a page that sends staff to a tenant admin.
  */
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink, AuthShellComponent],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

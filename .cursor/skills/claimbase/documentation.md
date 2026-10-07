@@ -127,7 +127,7 @@ Same C# XML rule as `Backend/src`.
 
 ## Styles
 
-Custom CSS in `Portal` gets a short comment stating why the rule exists (token mapping, grain limited to the login panel, `prefers-reduced-motion`). Do not comment each utility in a template.
+Custom CSS in `Portal` gets a short comment stating why the rule exists (token mapping, sign-in gradient only on the brand panel, `prefers-reduced-motion`). Do not comment each utility in a template.
 
 ## Inline comments (required when the block exists)
 

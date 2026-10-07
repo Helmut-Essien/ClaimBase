@@ -109,3 +109,24 @@
 - The Methodist University Ghana crest is on the sign-in panel because that logo was requested for this page.
 - Home still shows zero claims and "No recent claims" until that slice exists.
 - Sign out on a phone is inside the menu. The top bar carries the menu button and the university name.
+
+## Iteration 7
+
+### Fixed
+
+- **Medium — the phone brand band hid the crest when the copy was taller than the band.** `justify-center` on the scrolling band pushed the top into unreachable space. On a 360px-tall screen the crest sat 30px above the scroll origin and `scrollTop` could not go below 0. The band now uses `justify-content: safe center`, so a short band stays centered and overflow scrolls from the crest. The page card uses auto margins for the same reason: centering no longer clips the top when the card is taller than the screen. Rechecked on that short screen (crest 24px inside the band, which is the padding) and on a 1440px desktop (the motto block stays vertically centered).
+
+### Dismissed
+
+- **Sign-in button has no faded disabled color.** The empty form still disables the control, so it does not submit and assistive tech announces it as unavailable. The fill stays the full purple gradient because that washed-out 60% opacity was the color that looked wrong on the page. Security review found no medium or higher issue. Email in `localStorage`, Google Fonts, and the lack of a content security policy are unchanged and outside this slice.
+
+### Open
+
+- None. The second Bugbot pass found no bugs. The second security review found no medium or higher issues. Senior and UI reviews found no further actionable items.
+
+### Residuals
+
+- The sign-in draft keeps the email after sign-out. It does not keep the password.
+- The Methodist University Ghana crest and the motto "Excellence • Morality • Service" are on the brand panel because that branding was requested for this page.
+- Forgot password tells staff to ask a tenant admin. There is no reset email yet.
+- Home still shows zero claims and "No recent claims" until that slice exists.
