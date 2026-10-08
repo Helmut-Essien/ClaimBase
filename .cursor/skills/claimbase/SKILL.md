@@ -12,7 +12,8 @@ description: >-
   invariants. Generated code is performance-first and idiomatic for Clean
   Architecture, ASP.NET Core, EF Core, Angular, and MAUI MVVM: paged
   indexed queries, async I/O, OnPush screens, and commands off the UI
-  thread. Use for this repo, any implementation slice, tenants,
+  thread. Portal and API slices (through slice 7) come before the
+  lecturer app. Use for this repo, any implementation slice, tenants,
   semesters, courses, rates, sessions, claims, biometric import, PDF,
   Portal, MobileApp, forgot password, or reset password.
 ---
@@ -39,13 +40,14 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 
 1. **One slice at a time** — full code, tests, config, then stop.
 2. **Ask for confirmation** before the next slice.
-3. No placeholders (`// TODO`, `// add logic here`).
-4. External setup (Postgres) → `docker-compose` plus notes in [README.md](../../../README.md).
-5. See [phases.md](phases.md) for slice scope. See [reference.md](reference.md) for entities, APIs, and Portal conventions. See [documentation.md](documentation.md) for XML/JSDoc. See [mobile.md](mobile.md) for MAUI.
-6. **Constraints are full-stack** — any new field limit ships in the same slice on Domain + EF + FluentValidation + Shared DTOs and on the client that edits it (Portal `*_FIELD_LIMITS` or MAUI constants). Checklist: [reference.md](reference.md).
-7. **Document generated code in the same edit** — a slice is incomplete without it. Every public C# member gets XML (`///`). Every exported Portal symbol gets JSDoc (`/** */`). Inline comments capture product rules a later edit might "simplify" (semester gate, rate snapshot, transport once per day, biometric flag not changing amount, tenant filter, approved-claim freeze, offline `clientId`). Do not narrate obvious lines. Full rules: [documentation.md](documentation.md).
-8. **Production-ready by default** — [production.md](production.md).
-9. **Fast, and idiomatic for each stack** — generated code is highly optimized for the hot path and follows both ClaimBase product rules and the usual best practices of Clean Architecture, ASP.NET Core, EF Core, MediatR, FluentValidation, Angular, MAUI MVVM, PostgreSQL, JWT, Hangfire, and QuestPDF. Page and index queries, project DTOs in SQL, stay async, lazy-load Portal routes with `OnPush`, and keep MAUI work off the UI thread. Do not add Redis or a second cache. Full rules: [performance.md](performance.md). Hangfire is only for biometric import and presence-flag refresh. Password-reset email uses a background channel, not Hangfire.
+3. **Portal and backend before the lecturer app.** Finish the API and Portal slices in [phases.md](phases.md) (through slice 7) before MobileApp feature work. The MAUI shell from slice 0 stays. Lecturer screens, SQLite, and sync are slices 8 and 9.
+4. No placeholders (`// TODO`, `// add logic here`).
+5. External setup (Postgres) → `docker-compose` plus notes in [README.md](../../../README.md).
+6. See [phases.md](phases.md) for slice scope. See [reference.md](reference.md) for entities, APIs, and Portal conventions. See [documentation.md](documentation.md) for XML/JSDoc. See [mobile.md](mobile.md) only when the slice is 8 or 9.
+7. **Constraints are full-stack** — any new field limit ships in the same slice on Domain + EF + FluentValidation + Shared DTOs and on the client that edits it in that slice (Portal `*_FIELD_LIMITS`, or MAUI constants when the slice is the lecturer app). Checklist: [reference.md](reference.md).
+8. **Document generated code in the same edit** — a slice is incomplete without it. Every public C# member gets XML (`///`). Every exported Portal symbol gets JSDoc (`/** */`). Inline comments capture product rules a later edit might "simplify" (semester gate, rate snapshot, transport once per day, biometric flag not changing amount, tenant filter, approved-claim freeze, offline `clientId`). Do not narrate obvious lines. Full rules: [documentation.md](documentation.md).
+9. **Production-ready by default** — [production.md](production.md).
+10. **Fast, and idiomatic for each stack** — generated code is highly optimized for the hot path and follows both ClaimBase product rules and the usual best practices of Clean Architecture, ASP.NET Core, EF Core, MediatR, FluentValidation, Angular, PostgreSQL, JWT, Hangfire, and QuestPDF. Page and index queries, project DTOs in SQL, stay async, and lazy-load Portal routes with `OnPush`. MAUI MVVM and work off the UI thread apply in slices 8 and 9. Do not add Redis or a second cache. Full rules: [performance.md](performance.md). Hangfire is only for biometric import and presence-flag refresh. Password-reset email uses a background channel, not Hangfire.
 
 ## Technology stack
 

@@ -5,12 +5,13 @@ description: >-
   AppBlue chrome, purple gradient actions, Open Sans, white cards on a gray
   page, and a centered gradient sign-in card. Custom CSS includes a short comment
   saying why the rule exists. Use when styling the Angular Portal, the MAUI
-  lecturer app, auth, claim tables, or brand/visual work.
+  lecturer app, auth, claim tables, or brand/visual work. Style the
+  Portal during Portal slices; style MAUI when the lecturer-app slices start.
 ---
 
 # ClaimBase Design System
 
-Visual source of truth for the Portal and the lecturer app. It follows the AssetTag mobile app: AppBlue bars, a purple sign-in gradient, Open Sans, and white cards on `#F8F9FA`. Implement the Portal in `Portal/` with Tailwind. Implement MAUI in `MobileApp/Resources/Styles`. Token tables: [tokens.md](tokens.md). Atmosphere: [atmosphere.md](atmosphere.md). Layout and screens: [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
+Visual source of truth for the Portal and the lecturer app. It follows the AssetTag mobile app: AppBlue bars, a purple sign-in gradient, Open Sans, and white cards on `#F8F9FA`. Implement the Portal in `Portal/` with Tailwind while building Portal slices. Implement MAUI in `MobileApp/Resources/Styles` when lecturer-app slices 8 and 9 start ([phases.md](../claimbase/phases.md)). Token tables: [tokens.md](tokens.md). Atmosphere: [atmosphere.md](atmosphere.md). Layout and screens: [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
 
 ## Design intent
 

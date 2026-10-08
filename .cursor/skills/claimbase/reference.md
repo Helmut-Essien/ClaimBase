@@ -2,7 +2,7 @@
 
 Read from [SKILL.md](SKILL.md). This file is the contract to implement. Routes marked here are the target API. Do not add routes that contradict it.
 
-Nothing in this file is implemented until the matching slice in [phases.md](phases.md) is done.
+Nothing in this file is implemented until the matching slice in [phases.md](phases.md) is done. API and Portal routes below stay on slices 1–7. Lecturer phone screens that call them are slices 8 and 9.
 
 ## Tenancy and roles
 

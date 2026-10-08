@@ -36,6 +36,8 @@ Read from [SKILL.md](SKILL.md) when implementing a slice. Generate as if Product
 
 ## MobileApp
 
+Apply this section in slices 8 and 9 only.
+
 - API base URL comes from configuration, not a hard-coded production host in source. The ViewModel reads it through a service.
 - Tokens live in secure storage, not in a world-readable text file, and not in a public ViewModel property that the binding would display.
 - Offline logs stay on the device until sync succeeds. A failed sync does not delete the local row.

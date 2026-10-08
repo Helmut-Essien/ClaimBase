@@ -2,7 +2,9 @@
 
 Deliver **one slice at a time**. Confirm with the user before starting the next. Every slice follows [production.md](production.md), [performance.md](performance.md), and [documentation.md](documentation.md).
 
-Code in a slice is unfinished until public members have XML or JSDoc and non-obvious product rules have an inline comment. Do not leave documentation for a later pass. The same slice must be fast on its hot path and idiomatic for the stack it touches: Clean Architecture boundaries, EF Core and PostgreSQL practices, Angular standalone practices, and MAUI MVVM. See [performance.md](performance.md).
+**Portal and backend first.** Finish slices 4–7 (API and Portal) before any lecturer-app feature work. Slice 0 already compiled the MAUI shell; leave that project as it is. Do not add MobileApp screens, SQLite, or sync in slices 4–7. Those start at slice 8, after the Portal and API for sessions, claims, biometrics, and corrections exist. An earlier slice may still accept the lecturer role and `clientId` on the API so the phone can call it later.
+
+Code in a slice is unfinished until public members have XML or JSDoc and non-obvious product rules have an inline comment. Do not leave documentation for a later pass. The same slice must be fast on its hot path and idiomatic for the stack it touches: Clean Architecture boundaries, EF Core and PostgreSQL practices, and Angular standalone practices. MAUI MVVM applies only in slices 8 and 9. See [performance.md](performance.md).
 
 Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 
@@ -12,10 +14,12 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 | 1 | Identity: tenant, users, JWT, roles, EF global tenant filter, Portal login shell | **Done** |
 | 2 | Academic setup: campuses, faculties, departments, semesters, qualifications, courses, staff, department assignments, and position records on each lecturer | **Done** |
 | 3 | Rates: hourly rank × qualification matrix and tenant transport rate, dated so they carry into later semesters | **Done** |
-| 4 | Session logs: API semester gate, Portal list, MAUI offline log + sync | Planned |
+| 4 | Session logs: API semester gate, Portal list and entry on behalf of a lecturer | Planned |
 | 5 | Claims: builder, snapshots, HoD then Finance approval, Portal review | Planned |
-| 6 | Biometric Excel import, presence flags, on-demand QuestPDF | Planned |
-| 7 | Lecturer corrections and post-approval adjustment claims | Planned |
+| 6 | Biometric Excel import, presence flags, on-demand QuestPDF, Portal import | Planned |
+| 7 | Session exceptions and post-approval adjustment claims (API and Portal) | Planned |
+| 8 | MobileApp: lecturer login, offline session log, and sync | Planned |
+| 9 | MobileApp: session status and the exception flag | Planned |
 
 ## Slice 0 acceptance
 
@@ -44,7 +48,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 - A faculty belongs to one campus. Faculty names are unique on that campus. A faculty owns its departments. Department names are unique inside the faculty.
 - Staff have `PartTime` or `FullTime`, at least one department assignment, an optional `BiometricId` equal to the id on the biometric device when the lecturer has one, and an optional lecturer user. A lecturer may belong to more than one department.
 - Each position appointment is a child of that staff member: title, effective from, effective to. Overlapping ranges for the same lecturer are rejected. There is no position screen that is not the staff member's record.
-- Portal screens for these setups, with `*_FIELD_LIMITS`. The lecturer app is a later slice.
+- Portal screens for these setups, with `*_FIELD_LIMITS`. The lecturer app is slices 8 and 9.
 
 ## Slice 3 acceptance
 
@@ -57,11 +61,10 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 
 ## Slice 4 acceptance
 
-- Lecturer (and Portal on behalf of a lecturer, Admin / TenantAdmin only) creates a session: course code, start, end.
+- Admin or TenantAdmin creates a session on the Portal for a lecturer: course code, start, end. The API also accepts a lecturer's own create with `clientId`.
 - Semester must be `Open` and the local start date must fall inside it.
 - End after start. Overlap with another session for that staff member → 409.
-- MAUI stores the log locally, syncs with a client-generated id, and keeps the lecture times the lecturer entered. `RecordedAt` is when the device saved the log. Login, log, and session status screens use MVVM as in [mobile.md](mobile.md).
-- Sync of an already accepted client id returns the existing session (idempotent).
+- A second POST with the same `clientId` returns the existing session. The phone that generates that id and queues it offline is slice 8. This slice does not add MAUI screens, SQLite, or sync.
 - Portal lists sessions paged. Biometric data is not required to save a session.
 
 ## Slice 5 acceptance
@@ -85,8 +88,21 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 
 ## Slice 7 acceptance
 
-- A lecturer can flag a submitted session that was entered wrongly, before the claim is approved.
+- `POST /api/sessions/{id}/exception` lets the lecturer flag a submitted session that was entered wrongly, before the claim is approved. The lecturer phone screen for that flag is slice 9.
 - After approval, corrections are a new adjustment claim that references the original line. The original PDF stays reproducible.
+- Portal claim review shows the exception and the adjustment claim. Do not add MobileApp screens in this slice.
+
+## Slice 8 acceptance
+
+- Lecturer login, home, and log-session screens use MVVM as in [mobile.md](mobile.md).
+- The device stores the log locally with a client-generated id and keeps the lecture times the lecturer entered. `RecordedAt` is when the device saved the log.
+- When the network is available, the outbox posts that `clientId` to the session API from slice 4. A failed sync stays on the device with the API message.
+
+## Slice 9 acceptance
+
+- Session detail shows pending sync, submitted, on a draft claim, approved, or exception.
+- The exception screen sends the slice 7 flag. It is disabled once the claim is approved.
+- Pull claim status for the signed-in lecturer only.
 
 ## Out of scope until explicitly requested
 

@@ -1,6 +1,6 @@
 # MobileApp
 
-Read from [SKILL.md](SKILL.md) when changing lecturer flows. Portal rules do not apply to MAUI layouts. Product invariants do. Screens use MVVM.
+Read from [SKILL.md](SKILL.md) when changing lecturer flows. Start this file at slice 8 in [phases.md](phases.md), after the Portal and API slices (through slice 7) are done. Do not add screens, SQLite, or sync while a Portal or backend slice is in progress. Portal rules do not apply to MAUI layouts. Product invariants do. Screens use MVVM.
 
 ## Who it is for
 

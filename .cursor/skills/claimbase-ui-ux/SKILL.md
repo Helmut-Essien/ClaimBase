@@ -7,7 +7,8 @@ description: >-
   informational.   Form limits mirror backend Shared DTOs. Generated Portal code includes
   JSDoc on exported APIs and template comments where layout intent is not
   obvious. Use when building Portal pages, navigation, forms, tables, empty
-  states, or claim reports.
+  states, or claim reports. Lecturer phone UI waits until Portal and API
+  slices are done.
 ---
 
 # ClaimBase Portal UI/UX
@@ -130,6 +131,7 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 5. Ship field constraints with the API slice.
 6. Add JSDoc and the few template comments the screen needs before considering the screen done.
 7. Stop at the slice boundary and ask before the next.
+8. Stay on the Portal. Lecturer phone screens start only after the Portal and API slices in [phases.md](../claimbase/phases.md), at slices 8 and 9.
 
 ## Anti-patterns
 

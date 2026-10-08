@@ -70,6 +70,8 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 
 ## MobileApp
 
+Apply this section in slices 8 and 9.
+
 - Sync sends the outbox in one batch, not one HTTP call per keystroke. One `SaveChanges` per batch, not per row.
 - The local session list reads SQLite from the ViewModel command. It does not block the UI thread on the network.
 - ViewModels expose bindable state. Pages do not reload lists from code-behind. Tab pages use a singleton view model. A form page uses a transient view model.
@@ -95,6 +97,6 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 - [ ] Writes use one transaction; claim build and punch import do not SaveChanges per row
 - [ ] No .Result / .Wait() on I/O
 - [ ] Portal feature route is lazy; new components are OnPush; @for tracks id; search is debounced
-- [ ] MAUI I/O runs inside an async command, not the page code-behind or the UI thread
+- [ ] On slices 8 and 9, MAUI I/O runs inside an async command, not the page code-behind or the UI thread
 - [ ] The change follows that stack's row in "Stack and architecture practices" (layering, MediatR, EF, Angular, or MVVM)
 ```

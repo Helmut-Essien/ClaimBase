@@ -116,7 +116,7 @@ export const COURSE_FIELD_LIMITS = { code: 32, name: 200 } as const;
 
 ## MobileApp
 
-Same C# XML rule as `Backend/src`.
+Apply this section in slices 8 and 9. Same C# XML rule as `Backend/src`.
 
 | Kind | Required docs |
 |------|----------------|
