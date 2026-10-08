@@ -1,5 +1,5 @@
 <h1 class="page-title">Faculties</h1>
-<p class="mt-1 max-w-xl text-sm text-muted">
+<p class="mt-1 max-w-2xl text-sm text-muted">
   A faculty belongs to one campus. The same name may be used on another campus. Each faculty owns its departments.
 </p>
 
@@ -12,24 +12,30 @@
     <a class="cb-button cb-button-primary mt-4" routerLink="/app/campuses">Add a campus</a>
   </div>
 } @else {
-  <form class="cb-form mt-6 max-w-xl" [formGroup]="facultyForm" (ngSubmit)="submitFaculty()" novalidate>
-    <label class="cb-label" for="faculty-campus">Campus</label>
-    <select id="faculty-campus" formControlName="campusId" class="cb-input">
-      @for (campus of campuses(); track campus.id) {
-        <option [value]="campus.id">{{ campus.name }}</option>
-      }
-    </select>
-    <label class="cb-label" for="faculty-name">Faculty name</label>
-    <input id="faculty-name" type="text" formControlName="name" [attr.maxlength]="limits.name" class="cb-input" />
-    @if (facultyForm.controls.name.touched && facultyForm.controls.name.invalid) {
-      <p class="cb-field-error">Enter a faculty name.</p>
-    }
+  <form class="cb-form mt-6 max-w-xl lg:max-w-none" [formGroup]="facultyForm" (ngSubmit)="submitFaculty()" novalidate>
+    <div class="cb-faculty-create">
+      <div>
+        <label class="cb-label" for="faculty-campus">Campus</label>
+        <select id="faculty-campus" formControlName="campusId" class="cb-input">
+          @for (campus of campuses(); track campus.id) {
+            <option [value]="campus.id">{{ campus.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="cb-label" for="faculty-name">Faculty name</label>
+        <input id="faculty-name" type="text" formControlName="name" [attr.maxlength]="limits.name" class="cb-input" />
+        @if (facultyForm.controls.name.touched && facultyForm.controls.name.invalid) {
+          <p class="cb-field-error">Enter a faculty name.</p>
+        }
+      </div>
+      <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingFaculty()">
+        {{ submittingFaculty() ? 'Please wait…' : 'Add faculty' }}
+      </button>
+    </div>
     @if (facultyError()) {
       <p class="cb-banner" role="alert">{{ facultyError() }}</p>
     }
-    <button type="submit" class="cb-button cb-button-primary cb-button-block mt-4" [disabled]="submittingFaculty()">
-      {{ submittingFaculty() ? 'Please wait…' : 'Add faculty' }}
-    </button>
   </form>
 }
 
@@ -38,7 +44,7 @@
 }
 
 @if (campuses().length > 0) {
-  <div class="mt-6 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Campus filter">
+  <div class="mt-6 flex gap-2 pb-1 max-lg:overflow-x-auto lg:flex-wrap" role="group" aria-label="Campus filter">
     <button type="button" class="chip-filter" [attr.aria-pressed]="campusFilter() === null" (click)="filterCampus(null)">
       All campuses
     </button>
@@ -65,27 +71,57 @@
     <p class="mt-1 text-sm text-muted">Add a faculty on the campus you selected.</p>
   </div>
 } @else if (faculties().length > 0) {
-  <!-- Desktop keeps the faculty and its departments side by side. Phones stack the department list under the selection. -->
-  <div class="mt-8 lg:grid lg:grid-cols-2 lg:gap-8">
-    <section>
+  <!-- From lg the catalog is a table and the selected faculty's departments stay in the pane beside it. Below lg each faculty is its own card. -->
+  <div class="mt-8 lg:grid lg:grid-cols-[minmax(0,1.45fr)_minmax(22rem,0.85fr)] lg:items-start lg:gap-6">
+    <section class="cb-pane min-w-0">
       <h2 class="text-xs font-semibold tracking-wider text-muted uppercase">Faculties</h2>
-      <ul class="mt-3 space-y-3">
+      <p class="mt-1 text-sm text-muted">{{ facultyCountLabel() }}</p>
+      <ul class="mt-4 space-y-3 lg:hidden">
         @for (faculty of faculties(); track faculty.id) {
           <li>
             <button
               type="button"
               class="cb-card w-full text-left"
-              [class.outline]="selectedFacultyId() === faculty.id"
-              [class.outline-2]="selectedFacultyId() === faculty.id"
-              [class.outline-ink]="selectedFacultyId() === faculty.id"
+              [class.cb-card-selected]="selectedFacultyId() === faculty.id"
+              [attr.aria-pressed]="selectedFacultyId() === faculty.id"
               (click)="selectFaculty(faculty.id)"
             >
-              <p class="font-semibold text-ink">{{ faculty.name }}</p>
-              <p class="mt-1 text-sm text-muted">{{ faculty.campusName }}</p>
+              <p class="font-semibold break-words text-ink">{{ faculty.name }}</p>
+              <p class="mt-1 text-sm break-words text-muted">{{ faculty.campusName }}</p>
             </button>
           </li>
         }
       </ul>
+      <table class="mt-4 hidden w-full border-collapse lg:table">
+        <thead>
+          <tr>
+            <th class="cb-th" scope="col">Faculty</th>
+            <th class="cb-th" scope="col">Campus</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (faculty of faculties(); track faculty.id) {
+            <tr
+              class="cb-faculty-row"
+              [class.cb-row-selected]="selectedFacultyId() === faculty.id"
+              (click)="selectFaculty(faculty.id)"
+            >
+              <td class="cb-td">
+                <button
+                  type="button"
+                  class="cb-row-button block max-w-full truncate"
+                  [attr.aria-pressed]="selectedFacultyId() === faculty.id"
+                  [attr.title]="faculty.name"
+                  (click)="selectFaculty(faculty.id)"
+                >
+                  {{ faculty.name }}
+                </button>
+              </td>
+              <td class="cb-td text-muted" [attr.title]="faculty.campusName">{{ faculty.campusName }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
       <app-pager
         [page]="facultyPage()"
         [pageSize]="pageSize"
@@ -94,25 +130,30 @@
       />
     </section>
 
-    <section class="mt-8 lg:mt-0">
+    <section class="cb-pane mt-8 min-w-0 lg:mt-0">
       @if (selectedFaculty(); as faculty) {
-        <h2 class="text-xs font-semibold tracking-wider text-muted uppercase">Departments in {{ faculty.name }}</h2>
-        <p class="mt-2 text-sm text-muted">{{ faculty.campusName }}</p>
-        <form class="mt-4" [formGroup]="departmentForm" (ngSubmit)="submitDepartment()" novalidate>
-          <label class="cb-label" for="department-name">Department name</label>
-          <input
-            id="department-name"
-            type="text"
-            formControlName="name"
-            [attr.maxlength]="limits.name"
-            class="cb-input"
-          />
-          @if (departmentForm.controls.name.touched && departmentForm.controls.name.invalid) {
-            <p class="cb-field-error">Enter a department name.</p>
+        <h2 class="text-xs font-semibold tracking-wider text-muted uppercase">Departments</h2>
+        <p class="mt-1 break-words text-xl font-semibold text-slate">{{ faculty.name }}</p>
+        <p class="mt-1 text-sm text-muted">
+          {{ faculty.campusName }}
+          @if (!departmentLoadError() && (departments().length > 0 || !loadingDepartments())) {
+            <span>· {{ departmentCountLabel() }}</span>
           }
-          @if (departmentError()) {
-            <p class="cb-banner" role="alert">{{ departmentError() }}</p>
-          }
+        </p>
+        <form class="cb-department-create mt-4" [formGroup]="departmentForm" (ngSubmit)="submitDepartment()" novalidate>
+          <div>
+            <label class="cb-label" for="department-name">Department name</label>
+            <input
+              id="department-name"
+              type="text"
+              formControlName="name"
+              [attr.maxlength]="limits.name"
+              class="cb-input"
+            />
+            @if (departmentForm.controls.name.touched && departmentForm.controls.name.invalid) {
+              <p class="cb-field-error">Enter a department name.</p>
+            }
+          </div>
           <button
             type="submit"
             class="cb-button cb-button-primary cb-button-block mt-4"
@@ -121,6 +162,9 @@
             {{ submittingDepartment() ? 'Please wait…' : 'Add department' }}
           </button>
         </form>
+        @if (departmentError()) {
+          <p class="cb-banner" role="alert">{{ departmentError() }}</p>
+        }
 
         @if (departmentLoadError()) {
           <p class="cb-banner" role="alert">{{ departmentLoadError() }}</p>
@@ -129,14 +173,28 @@
         } @else if (departments().length === 0) {
           <p class="mt-6 text-base">No departments in this faculty yet.</p>
         } @else {
-          <ul class="mt-6 space-y-3">
+          <ul class="mt-6 space-y-3 lg:hidden">
             @for (department of departments(); track department.id) {
               <li class="cb-card">
-                <p class="font-semibold text-ink">{{ department.name }}</p>
-                <p class="mt-1 text-sm text-muted">{{ department.facultyName }} · {{ department.campusName }}</p>
+                <p class="font-semibold break-words text-ink">{{ department.name }}</p>
+                <p class="mt-1 text-sm break-words text-muted">{{ department.facultyName }} · {{ department.campusName }}</p>
               </li>
             }
           </ul>
+          <table class="mt-6 hidden w-full border-collapse lg:table">
+            <thead>
+              <tr>
+                <th class="cb-th" scope="col">Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (department of departments(); track department.id) {
+                <tr>
+                  <td class="cb-td font-semibold text-ink" [attr.title]="department.name">{{ department.name }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
           <app-pager
             [page]="departmentPage()"
             [pageSize]="pageSize"
@@ -144,6 +202,8 @@
             (pageChange)="loadDepartments($event)"
           />
         }
+      } @else if (selectedFacultyId()) {
+        <p class="text-base">Please wait…</p>
       }
     </section>
   </div>

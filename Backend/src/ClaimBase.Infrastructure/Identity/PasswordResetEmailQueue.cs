@@ -58,25 +58,42 @@ public sealed class PasswordResetEmailQueue : BackgroundService, IPasswordResetE
         return _channel.Writer.WriteAsync(work, cancellationToken);
     }
 
+    /// <summary>
+    /// Stops the reader. Completing the channel ends an idle wait so host shutdown is not a failed send.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _channel.Writer.TryComplete();
+        await base.StopAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var work in _channel.Reader.ReadAllAsync(stoppingToken))
+        try
         {
-            try
+            await foreach (var work in _channel.Reader.ReadAllAsync(stoppingToken))
             {
-                using var scope = _scopes.CreateScope();
-                var delivery = scope.ServiceProvider.GetRequiredService<IPasswordResetDelivery>();
-                await delivery.DeliverAsync(work.Email, work.Account, stoppingToken);
+                try
+                {
+                    using var scope = _scopes.CreateScope();
+                    var delivery = scope.ServiceProvider.GetRequiredService<IPasswordResetDelivery>();
+                    await delivery.DeliverAsync(work.Email, work.Account, stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Password reset email was not sent to {Email}.", work.Email);
+                }
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogWarning(exception, "Password reset email was not sent to {Email}.", work.Email);
-            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // ReadAllAsync throws when the host cancels the wait. An empty queue is not a failed email.
         }
     }
 }

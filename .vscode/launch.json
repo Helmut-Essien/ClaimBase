@@ -12,6 +12,7 @@
       "console": "integratedTerminal",
       "launchSettingsFilePath": "${workspaceFolder}/Backend/src/ClaimBase.Api/Properties/launchSettings.json",
       "launchSettingsProfile": "http",
+      "postDebugTask": "api: stop",
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_URLS": "http://localhost:5190"
@@ -22,6 +23,7 @@
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "portal: start",
+      "postDebugTask": "portal: stop",
       "url": "http://localhost:4201/",
       "webRoot": "${workspaceFolder}/Portal"
     }

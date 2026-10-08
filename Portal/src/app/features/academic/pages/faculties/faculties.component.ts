@@ -85,6 +85,18 @@ export class FacultiesComponent {
     return this.faculties().find((faculty) => faculty.id === id) ?? null;
   }
 
+  /** Faculties matching the campus filter, including rows on other pages. */
+  facultyCountLabel(): string {
+    const count = this.facultyTotal();
+    return count === 1 ? '1 faculty' : `${count} faculties`;
+  }
+
+  /** Departments in the selected faculty, including rows on other pages. */
+  departmentCountLabel(): string {
+    const count = this.departmentTotal();
+    return count === 1 ? '1 department' : `${count} departments`;
+  }
+
   /** Limits the faculty page to one campus, or clears that filter. */
   filterCampus(campusId: string | null): void {
     this.campusFilter.set(campusId);
@@ -99,6 +111,9 @@ export class FacultiesComponent {
     this.selectedFacultyId.set(id);
     this.departmentForm.reset();
     this.departmentError.set(null);
+    // Drop the previous faculty's rows so the pane does not show them under the new name.
+    this.departments.set([]);
+    this.departmentTotal.set(0);
     this.loadDepartments(1);
   }
 
@@ -146,6 +161,8 @@ export class FacultiesComponent {
           if (!stillVisible) {
             this.selectedFacultyId.set(result.items[0]?.id ?? null);
             this.departmentForm.reset();
+            this.departments.set([]);
+            this.departmentTotal.set(0);
           }
           if (this.selectedFacultyId()) {
             this.loadDepartments(1);
@@ -218,6 +235,11 @@ export class FacultiesComponent {
           this.submittingFaculty.set(false);
           this.facultyForm.controls.name.reset();
           this.selectedFacultyId.set(created.id);
+          this.departmentForm.reset();
+          this.departmentError.set(null);
+          // The new id is not on the current page yet. Drop the previous faculty's departments.
+          this.departments.set([]);
+          this.departmentTotal.set(0);
           this.campusFilter.set(campusId);
           this.loadFaculties(1);
         },

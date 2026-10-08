@@ -47,6 +47,36 @@
         "reveal": "always",
         "panel": "dedicated"
       }
+    },
+    {
+      "label": "api: stop",
+      "type": "shell",
+      "command": "bash",
+      "args": [".vscode/stop-listener.sh", "5190"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "close": true
+      }
+    },
+    {
+      "label": "portal: stop",
+      "type": "shell",
+      "command": "bash",
+      "args": [".vscode/stop-listener.sh", "4201"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "close": true
+      }
     }
   ]
 }
