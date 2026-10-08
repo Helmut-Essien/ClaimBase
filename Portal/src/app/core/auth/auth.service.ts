@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, Observable } from 'rxjs';
@@ -6,7 +6,8 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TenantStateService } from '../tenant/tenant-state.service';
 import { AuthSession } from './auth-session';
-import { AuthResponse, MeResponse } from './auth.models';
+import { SESSION_PROBE } from './auth.interceptor';
+import { AuthResponse, MeResponse, PasswordResetMessage } from './auth.models';
 
 /**
  * Signs portal staff in and restores the session from `GET /api/auth/me`.
@@ -42,6 +43,31 @@ export class AuthService {
    */
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/api/auth/login`, { email, password });
+  }
+
+  /**
+   * Asks for a reset link. The message is the same when the address is unknown.
+   * This call does not sign anyone in.
+   */
+  forgotPassword(email: string): Observable<PasswordResetMessage> {
+    return this.http.post<PasswordResetMessage>(`${environment.apiUrl}/api/auth/forgot-password`, { email });
+  }
+
+  /**
+   * Sets a new password from the emailed link. The caller signs in afterwards.
+   */
+  resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+    confirmPassword: string,
+  ): Observable<PasswordResetMessage> {
+    return this.http.post<PasswordResetMessage>(`${environment.apiUrl}/api/auth/reset-password`, {
+      email,
+      token,
+      newPassword,
+      confirmPassword,
+    });
   }
 
   /** Stores a non-lecturer token. A different token drops the previous profile. */
@@ -81,7 +107,11 @@ export class AuthService {
     }
 
     try {
-      const me = await firstValueFrom(this.http.get<MeResponse>(`${environment.apiUrl}/api/auth/me`));
+      const me = await firstValueFrom(
+        this.http.get<MeResponse>(`${environment.apiUrl}/api/auth/me`, {
+          context: new HttpContext().set(SESSION_PROBE, true),
+        }),
+      );
       if (this.session.token() !== token) {
         return false;
       }

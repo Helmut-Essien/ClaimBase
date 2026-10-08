@@ -33,6 +33,7 @@ Slice 0 is in the tree. Later slices stay `Planned` until that slice is built.
 - Seed one development tenant and one user per role. Document the passwords in `appsettings.Development.json` only.
 - Global query filter on `TenantId`. Integration test proves tenant A cannot read tenant B.
 - Portal: `/login` and an empty `/app` shell. Lecturer accounts receive 403 on Portal routes.
+- `POST /api/auth/forgot-password` and `POST /api/auth/reset-password` follow [reference.md](reference.md). The Portal pages are `/login/forgot-password` and `/login/reset-password`. They use the same confirmation whether or not the email exists, and they do not sign the user in.
 
 ## Slice 2 acceptance
 

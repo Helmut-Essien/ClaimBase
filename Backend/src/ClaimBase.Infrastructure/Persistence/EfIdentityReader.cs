@@ -41,7 +41,8 @@ public sealed class EfIdentityReader : IIdentityReader
                     user.Role,
                     user.DepartmentId,
                     tenant.Name,
-                    tenant.CurrencyCode))
+                    tenant.CurrencyCode,
+                    user.PasswordChangedAt))
             .ToListAsync(cancellationToken);
     }
 

@@ -32,6 +32,9 @@ public sealed class AppDbContext : DbContext
     /// <summary>Users.</summary>
     public DbSet<User> Users => Set<User>();
 
+    /// <summary>Password-reset links. Anonymous forgot and reset ignore the tenant filter.</summary>
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
     /// <summary>Campuses.</summary>
     public DbSet<Campus> Campuses => Set<Campus>();
 
@@ -77,6 +80,7 @@ public sealed class AppDbContext : DbContext
         // Empty _tenantId matches nothing. That is deliberate: a query without a resolved tenant must not scan every university.
         modelBuilder.Entity<Tenant>().HasQueryFilter(tenant => tenant.Id == _tenantId);
         modelBuilder.Entity<User>().HasQueryFilter(user => user.TenantId == _tenantId);
+        modelBuilder.Entity<PasswordResetToken>().HasQueryFilter(token => token.TenantId == _tenantId);
         modelBuilder.Entity<Campus>().HasQueryFilter(campus => campus.TenantId == _tenantId);
         modelBuilder.Entity<Faculty>().HasQueryFilter(faculty => faculty.TenantId == _tenantId);
         modelBuilder.Entity<Department>().HasQueryFilter(department => department.TenantId == _tenantId);

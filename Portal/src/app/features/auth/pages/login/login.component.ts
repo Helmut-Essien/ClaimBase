@@ -8,13 +8,13 @@ import { AUTH_FIELD_LIMITS } from '../../../../core/auth/auth.models';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { requiredTrimmed } from '../../../../shared/validators/required-trimmed';
 import { AuthShellComponent } from '../auth-shell/auth-shell.component';
+import { LOGIN_DRAFT_KEY, readLoginDraftEmail } from './login-draft';
 
-/** Browser key for the last email typed on this sign-in form. The password is never stored. */
-export const LOGIN_DRAFT_KEY = 'claimbase.login-draft';
+export { LOGIN_DRAFT_KEY };
 
 /**
  * Staff sign-in. There is no signup. A lecturer response is cleared and the mobile-app message is shown.
- * Forgot password leaves this form for a page that sends staff to a tenant admin.
+ * Forgot password leaves this form for the reset-link page. That page reads this draft and does not write it.
  */
 @Component({
   selector: 'app-login',
@@ -113,12 +113,10 @@ export class LoginComponent {
 /** Last email saved in this browser. Rewrites the entry so a previously stored password is dropped. */
 function readSavedEmail(): string {
   try {
-    const raw = localStorage.getItem(LOGIN_DRAFT_KEY);
-    if (!raw) {
-      return '';
+    const email = readLoginDraftEmail();
+    if (!localStorage.getItem(LOGIN_DRAFT_KEY)) {
+      return email;
     }
-    const parsed = JSON.parse(raw) as { email?: unknown };
-    const email = typeof parsed.email === 'string' ? parsed.email : '';
     localStorage.setItem(LOGIN_DRAFT_KEY, JSON.stringify({ email }));
     return email;
   } catch {

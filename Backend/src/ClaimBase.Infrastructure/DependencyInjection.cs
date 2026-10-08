@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ClaimBase.Infrastructure;
 
-/// <summary>Registers persistence, password hashing, and JWT authentication.</summary>
+/// <summary>Registers persistence, password hashing, password reset mail, and JWT authentication.</summary>
 public static class DependencyInjection
 {
     /// <summary>
@@ -37,6 +37,19 @@ public static class DependencyInjection
         services.AddScoped<CurrentTenant>();
         services.AddScoped<ICurrentTenant>(provider => provider.GetRequiredService<CurrentTenant>());
         services.AddScoped<IIdentityReader, EfIdentityReader>();
+        services.AddScoped<IPasswordResetStore, EfPasswordResetStore>();
+        services.AddSingleton<IResetTokenProtector, ResetTokenProtector>();
+        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+        services.Configure<PortalOptions>(configuration.GetSection(PortalOptions.SectionName));
+        services.AddSingleton<IPortalLinks, PortalLinkBuilder>();
+        services.AddSingleton<PasswordResetEmailLog>();
+        services.AddSingleton<IPasswordResetEmailLog>(provider => provider.GetRequiredService<PasswordResetEmailLog>());
+        services.AddSingleton<PasswordResetEmailQueue>();
+        services.AddSingleton<IPasswordResetEmailQueue>(provider => provider.GetRequiredService<PasswordResetEmailQueue>());
+        services.AddHostedService(provider => provider.GetRequiredService<PasswordResetEmailQueue>());
+        services.AddScoped<SmtpPasswordResetSender>();
+        services.AddScoped<IPasswordResetDelivery, PasswordResetDelivery>();
+        services.AddScoped<IPasswordResetMailer, PasswordResetMailer>();
         services.AddScoped<IAcademicCatalog, EfAcademicCatalog>();
         services.AddScoped<IRateSchedule, EfRateSchedule>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
@@ -61,6 +74,12 @@ public static class DependencyInjection
                     ClockSkew = TimeSpan.FromMinutes(1),
                     NameClaimType = "sub",
                     RoleClaimType = "role"
+                };
+
+                // One primary-key read. A reset must end tokens issued before the new password, and there is no refresh-token table to revoke.
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = PasswordChangedStampValidator.ValidateAsync
                 };
             });
 

@@ -21,7 +21,7 @@ public static class StartupConfiguration
     public const string DevelopmentDatabasePassword = "claimbase_dev";
 
     /// <summary>
-    /// Validates the connection string and JWT key. Development may use committed defaults. Production may not.
+    /// Validates the connection string, JWT key, and, in Production, the portal URL and SMTP host used by password reset.
     /// </summary>
     /// <param name="configuration">The host configuration.</param>
     /// <param name="environmentName">The ASP.NET environment name.</param>
@@ -55,5 +55,15 @@ public static class StartupConfiguration
 
         if (connectionString.Contains("Include Error Detail", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("ConnectionStrings:DefaultConnection must not enable Include Error Detail in Production.");
+
+        var portalBaseUrl = configuration["Portal:BaseUrl"];
+        if (!Uri.TryCreate(portalBaseUrl, UriKind.Absolute, out var portalUri) || portalUri.Scheme != Uri.UriSchemeHttps)
+            throw new InvalidOperationException("Portal:BaseUrl must be an absolute https URL in Production.");
+
+        if (string.IsNullOrWhiteSpace(configuration["Email:Host"]))
+            throw new InvalidOperationException("Email:Host is required in Production.");
+
+        if (string.IsNullOrWhiteSpace(configuration["Email:FromAddress"]))
+            throw new InvalidOperationException("Email:FromAddress is required in Production.");
     }
 }

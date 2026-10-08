@@ -381,6 +381,56 @@ namespace ClaimBase.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ClaimBase.Domain.Identity.PasswordResetToken", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(26)
+                        .HasColumnType("character varying(26)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(26)
+                        .HasColumnType("character varying(26)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(26)
+                        .HasColumnType("character varying(26)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PasswordResetTokens_OneOutstanding")
+                        .HasFilter("\"UsedAt\" IS NULL");
+
+                    b.HasIndex("TenantId", "UserId");
+
+                    b.ToTable("PasswordResetTokens", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PasswordResetTokens_Expiry", "\"ExpiresAt\" > \"CreatedAt\"");
+
+                            t.HasCheckConstraint("CK_PasswordResetTokens_TokenHash", "char_length(\"TokenHash\") = 64");
+                        });
+                });
+
             modelBuilder.Entity("ClaimBase.Domain.Identity.Tenant", b =>
                 {
                     b.Property<string>("Id")
@@ -439,6 +489,9 @@ namespace ClaimBase.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
+
+                    b.Property<DateTimeOffset?>("PasswordChangedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -616,6 +669,15 @@ namespace ClaimBase.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ClaimBase.Domain.Identity.PasswordResetToken", b =>
+                {
+                    b.HasOne("ClaimBase.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

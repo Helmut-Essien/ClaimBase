@@ -78,15 +78,19 @@ The project targets Android because that workload is installed. Lecturer sign-in
 | Postgres | `localhost:5434`, db `claimbase_db`, user `claimbase` |
 | JWT issuer / audience | `ClaimBase.Api` / `ClaimBase.Portal` |
 | JWT key | Development key in `appsettings.Development.json` only |
-| Portal origin | `http://localhost:4201` |
+| Portal origin | `http://localhost:4201` (`Portal:BaseUrl`, also used in password-reset links) |
+| Password reset email | No SMTP host in Development. The link is appended to gitignored `logs/password-resets.log` |
 | Forwarded client IP | Loopback proxies only, plus any `ForwardedHeaders__KnownProxies` or `ForwardedHeaders__KnownNetworks` |
 
-`appsettings.json` ships empty connection string and JWT values. Production refuses to start on the Development password, `Include Error Detail`, a JWT key shorter than 64 characters, or the Development JWT key.
+`appsettings.json` ships empty connection string, JWT, portal, and SMTP values. Production refuses to start on the Development password, `Include Error Detail`, a JWT key shorter than 64 characters, the Development JWT key, a `Portal:BaseUrl` that is not absolute `https`, or a missing `Email:Host` / `Email:FromAddress`.
 
 ```bash
 export ASPNETCORE_ENVIRONMENT=Production
 export ConnectionStrings__DefaultConnection="Host=...;Database=claimbase_db;Username=...;Password=..."
 export JWT__KEY="<at least 64 random characters>"
+export Portal__BaseUrl="https://portal.example"
+export Email__Host="smtp.example"
+export Email__FromAddress="noreply@example"
 export CORS__ORIGINS="https://portal.example"
 export ForwardedHeaders__KnownProxies__0="<reverse proxy IP>"
 ```

@@ -38,7 +38,7 @@ Use `CommunityToolkit.Mvvm`. Each screen has a XAML `ContentPage` and a `*ViewMo
 
 | Screen | Behavior |
 |--------|----------|
-| Login | Email + password. Store the JWT in secure storage. |
+| Login | Email + password. Store the JWT in secure storage. Forgot password calls `POST /api/auth/forgot-password`. The link opens the Portal reset page. The lecturer then signs in here with the new password. |
 | Home | Open semester name, pending sync count, recent sessions. |
 | Log session | Course code, start, end. Save works offline. |
 | Session detail | Status: pending sync, submitted, on a draft claim, approved, or exception. |

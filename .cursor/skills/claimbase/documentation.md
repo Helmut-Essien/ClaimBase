@@ -144,6 +144,7 @@ Place the comment **above** the block.
 - Part-time and full-time staff are both included.
 - Overlapping sessions, position ranges, or rate ranges are rejected.
 - Email is stored lowercase. Course codes are stored uppercase.
+- Forgot password returns the same message for an unknown email, a shared email, and a real account. The raw reset token is hashed before storage and is not logged in Production.
 - Secrets, JWTs, and raw biometric workbooks are not logged.
 - `clientId` deduplicates offline sync. `RecordedAt` can be much later than `StartsAt`.
 - Production startup rejects Development secrets.

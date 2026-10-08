@@ -16,7 +16,7 @@ JSON camelCase. Anonymous `GET /health`.
 | `Finance` | Yes | No | Claims and PDF for the tenant |
 | `Lecturer` | No | Yes | Own sessions and own claim status |
 
-JWT claims: `sub`, `tenantId`, `role`, `departmentId` (HoD only).
+JWT claims: `sub`, `tenantId`, `role`, `departmentId` (HoD only), `pwd` (unix seconds of the last password reset; absent until the first reset). A token whose `pwd` claim does not match `User.PasswordChangedAt` is rejected. That check is one primary-key read because there is no refresh-token table to revoke.
 
 Exception middleware:
 
@@ -35,6 +35,8 @@ Cross-tenant resource ids are 404.
 | Method | Route | Roles | Slice |
 |--------|-------|-------|-------|
 | POST | `/api/auth/login` | Anonymous | 1 |
+| POST | `/api/auth/forgot-password` | Anonymous | 1 |
+| POST | `/api/auth/reset-password` | Anonymous | 1 |
 | GET | `/api/auth/me` | JWT | 1 |
 | GET/POST | `/api/campuses` | TenantAdmin, Admin | 2 |
 | GET/POST | `/api/faculties` | TenantAdmin, Admin | 2 |
@@ -65,6 +67,10 @@ Cross-tenant resource ids are 404.
 
 Login body: `email`, `password`. Response: `token`, `expiresAt`, `tenantId`, `tenantName`, `userId`, `email`, `displayName`, `role`, `currencyCode`.
 
+Forgot-password body: `email`. Response: `message` = "If that email belongs to a staff account, a reset link is on its way." The same message is returned when the address is unknown and when two tenants share it. No token is returned. The email link is `{Portal:BaseUrl}/login/reset-password?email={email}&token={token}` and lasts one hour. A newer request for that user consumes the previous unused link. The request only looks up the email, then queues the same follow-up for a hit and a miss. The worker creates the hashed link and sends the email, so an unknown address is not faster. Two resets of one link serialize on that user: one succeeds. When `Email:Host` is empty, Development writes the link to gitignored `logs/password-resets.log` and tests run the worker inline. Production requires SMTP and does not write that file.
+
+Reset-password body: `email`, `token`, `newPassword`, `confirmPassword`. Success message: "Password has been reset successfully." A missing, expired, used, or mismatched link is HTTP 400 with "Invalid reset token." A wrong email does not spend the link. Success replaces the bcrypt hash, sets `PasswordChangedAt`, and consumes outstanding links for that user. The caller signs in again. Login, forgot-password, and reset-password share the per-IP and per-email rate limit. `GET /api/auth/me` does not.
+
 Session create: `clientId`, `courseCode`, `startsAt`, `endsAt`. Server assigns the open semester from the local start date. A second POST with the same `clientId` returns the original session.
 
 Claim build body: `staffId`, `semesterId`. Response includes lines and `omittedSessions` (no rate).
@@ -79,7 +85,9 @@ Money is `numeric(18,2)` and ≥ 0. Instants are UTC. A "day" is the calendar da
 
 **Tenant:** Id, Name (≤200), CurrencyCode (exactly 3), TimeZoneId (≤64, default `Africa/Accra`), CreatedAt
 
-**User:** Id, TenantId, Email (unique per tenant, lowercase, ≤320), DisplayName (≤200), PasswordHash, Role, DepartmentId? (required for HoD), StaffId? (required for Lecturer), CreatedAt
+**User:** Id, TenantId, Email (unique per tenant, lowercase, ≤320), DisplayName (≤200), PasswordHash, PasswordChangedAt? (UTC, whole seconds, null until the first reset), Role, DepartmentId? (required for HoD), StaffId? (required for Lecturer), CreatedAt
+
+**PasswordResetToken:** Id, TenantId, UserId, TokenHash (64 lowercase hex, unique, SHA-256 of the raw token), ExpiresAt, CreatedAt, UsedAt?. The raw token is never stored. Anonymous forgot and reset ignore the tenant filter. A portal query still uses the filter.
 
 **Campus:** Id, TenantId, Name (≤200, unique per tenant). A campus does not own semesters or rates.
 
@@ -153,7 +161,8 @@ When adding a writable field, complete every applicable layer in the same slice.
 | Field | Max | Notes |
 |-------|-----|--------|
 | Email | 320 | Lowercase |
-| Password | 128 | Min 8 |
+| Password | 128 | Min 8. Reset uses the same bounds |
+| Reset token | 128 | On the wire only. The column stores a 64-character hash |
 | DisplayName / Tenant / Campus / Faculty / Department / Semester / Course name | 200 | Trimmed |
 | Qualification / Position name | 80 | |
 | Course code | 32 | Uppercase |
@@ -206,6 +215,7 @@ Portal/src/app/
 |------|-------|-------|
 | `/login` | guest | 1 |
 | `/login/forgot-password` | guest | 1 |
+| `/login/reset-password` | guest | 1 |
 | `/app` | auth, not Lecturer | 1 |
 | `/app/campuses`, `/app/faculties`, `/app/semesters`, `/app/courses`, `/app/staff` | Admin, TenantAdmin | 2 |
 | `/app/rates` | Admin, TenantAdmin | 3 |
@@ -230,6 +240,14 @@ JWT storage key: `claimbase.token`.
 |---------|----------|----------|
 | `ConnectionStrings__DefaultConnection` | Yes outside Development | PostgreSQL |
 | `JWT__KEY` | Yes | Signing key, ≥ 64 chars in Production |
+| `Portal__BaseUrl` | Yes in Production | Absolute Portal origin used in reset links. Production must be `https`. Development is `http://localhost:4201` |
+| `Email__Host` | Yes in Production | SMTP host. Empty in Development writes the link to gitignored `logs/password-resets.log` |
+| `Email__Port` | No | Default 587 |
+| `Email__Username` | No | Empty skips SMTP authentication |
+| `Email__Password` | No | SMTP password. Never commit a Production value |
+| `Email__FromAddress` | Yes in Production | From address on the reset email |
+| `Email__FromName` | No | Default `ClaimBase` |
+| `Email__UseStartTls` | No | Default true |
 | `CORS__ORIGINS` | No | Empty in Production means same-origin Portal |
 | `ForwardedHeaders__KnownProxies__0` | No | Extra reverse-proxy IP allowed to set `X-Forwarded-For`. Loopback stays trusted |
 | `ForwardedHeaders__KnownNetworks__0` | No | Extra reverse-proxy CIDR allowed to set `X-Forwarded-For` |

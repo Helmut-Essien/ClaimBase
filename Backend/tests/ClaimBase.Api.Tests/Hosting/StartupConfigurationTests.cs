@@ -81,6 +81,37 @@ public class StartupConfigurationTests
             .WithMessage("*Development signing key*");
     }
 
+    [Fact]
+    public void Validate_WhenProductionPortalUrlIsNotHttps_Throws()
+    {
+        var configuration = Configuration(
+            "Host=db;Database=claimbase_db;Username=claimbase;Password=secret",
+            new string('k', 64));
+
+        var act = () => StartupConfiguration.Validate(configuration, "Production");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Portal:BaseUrl*");
+    }
+
+    [Fact]
+    public void Validate_WhenProductionEmailHostIsMissing_Throws()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = "Host=db;Database=claimbase_db;Username=claimbase;Password=secret",
+                ["Jwt:Key"] = new string('k', 64),
+                ["Portal:BaseUrl"] = "https://portal.example"
+            })
+            .Build();
+
+        var act = () => StartupConfiguration.Validate(configuration, "Production");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Email:Host*");
+    }
+
     private static IConfiguration Configuration(string connectionString, string jwtKey) =>
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>

@@ -24,6 +24,22 @@ public static class AuthFieldLimits
 
     /// <summary>IANA time zone id maximum.</summary>
     public const int TimeZoneId = 64;
+
+    /// <summary>Reset token maximum on the wire. The stored value is a 64-character hash.</summary>
+    public const int ResetToken = 128;
+}
+
+/// <summary>Copy returned by forgot-password and reset-password. The forgot message does not reveal whether the email exists.</summary>
+public static class PasswordResetCopy
+{
+    /// <summary>Response for every forgot-password request.</summary>
+    public const string LinkSent = "If that email belongs to a staff account, a reset link is on its way.";
+
+    /// <summary>Response after a link is accepted.</summary>
+    public const string Reset = "Password has been reset successfully.";
+
+    /// <summary>Response for a missing, expired, used, or mismatched link.</summary>
+    public const string InvalidToken = "Invalid reset token.";
 }
 
 /// <summary>Body for <c>POST /api/auth/login</c>.</summary>
@@ -99,4 +115,54 @@ public sealed class MeResponse
 
     /// <summary>IANA time zone id.</summary>
     public required string TimeZoneId { get; init; }
+}
+
+/// <summary>Body for <c>POST /api/auth/forgot-password</c>. The response is the same when the email is unknown.</summary>
+public sealed class ForgotPasswordRequest
+{
+    /// <summary>Sign-in email. The handler compares it in lowercase.</summary>
+    [Required]
+    [MaxLength(AuthFieldLimits.Email)]
+    [EmailAddress]
+    public string Email { get; init; } = "";
+}
+
+/// <summary>Forgot-password result. This type has no token property. The token travels only in the email.</summary>
+public sealed class ForgotPasswordResponse
+{
+    /// <summary>Public confirmation.</summary>
+    public required string Message { get; init; }
+}
+
+/// <summary>Body for <c>POST /api/auth/reset-password</c>.</summary>
+public sealed class ResetPasswordRequest
+{
+    /// <summary>Email the link was sent to. A different address does not spend the link.</summary>
+    [Required]
+    [MaxLength(AuthFieldLimits.Email)]
+    [EmailAddress]
+    public string Email { get; init; } = "";
+
+    /// <summary>Raw token from the link.</summary>
+    [Required]
+    [MaxLength(AuthFieldLimits.ResetToken)]
+    public string Token { get; init; } = "";
+
+    /// <summary>New plain password. Minimum 8, maximum 128.</summary>
+    [Required]
+    [MinLength(AuthFieldLimits.PasswordMin)]
+    [MaxLength(AuthFieldLimits.PasswordMax)]
+    public string NewPassword { get; init; } = "";
+
+    /// <summary>Must equal <see cref="NewPassword"/>.</summary>
+    [Required]
+    [Compare(nameof(NewPassword))]
+    public string ConfirmPassword { get; init; } = "";
+}
+
+/// <summary>Reset-password result.</summary>
+public sealed class ResetPasswordResponse
+{
+    /// <summary>Success message. The caller signs in again with the new password.</summary>
+    public required string Message { get; init; }
 }

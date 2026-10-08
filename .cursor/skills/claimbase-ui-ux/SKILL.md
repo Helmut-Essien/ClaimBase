@@ -2,7 +2,7 @@
 name: claimbase-ui-ux
 description: >-
   ClaimBase Portal UI/UX: role-based shell (collapsible sidebar on a phone, fixed sidebar from lg),
-  iOS safe areas, login, academic setup, rate matrix, session lists, claim
+  iOS safe areas, login, forgot password, reset password, academic setup, rate matrix, session lists, claim
   review, biometric import, and PDF download. Biometric checkmarks are
   informational.   Form limits mirror backend Shared DTOs. Generated Portal code includes
   JSDoc on exported APIs and template comments where layout intent is not
@@ -60,6 +60,7 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 - Email and password, 48px fields, focus ring only while focused. The password starts masked, with a closed-eye control that reveals it.
 - Hints: this browser remembers the last email, and the password is not stored.
 - "Forgot password?" sits on the password label row and opens `/login/forgot-password`.
+- The reset link from the email opens `/login/reset-password` in the same shell. Spec: [screens.md](screens.md). Forgot password sends the link. Reset password does not sign the user in.
 - A standing note says lecturers use the mobile app. After a lecturer signs in, that note gives way to the status message and the token is cleared.
 - No license key. No self-service signup. No remember-me checkbox. Accounts are issued by a tenant admin.
 

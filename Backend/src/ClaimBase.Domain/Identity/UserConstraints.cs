@@ -25,4 +25,10 @@ public static class UserConstraints
 
     /// <summary>Stored role name maximum.</summary>
     public const int RoleMaxLength = 32;
+
+    /// <summary>SHA-256 hex of a reset token. The raw token is never stored.</summary>
+    public const int PasswordResetTokenHashLength = 64;
+
+    /// <summary>Maximum length accepted for a reset token on the wire. A real token is shorter.</summary>
+    public const int PasswordResetTokenMaxLength = 128;
 }

@@ -27,6 +27,12 @@ public sealed class User
     /// <summary>Bcrypt password hash. Never returned by the API.</summary>
     public string PasswordHash { get; private set; } = null!;
 
+    /// <summary>
+    /// UTC time of the last successful reset, truncated to a whole second. Null until the first reset.
+    /// Access tokens carry this instant. A token from before the reset no longer matches.
+    /// </summary>
+    public DateTimeOffset? PasswordChangedAt { get; private set; }
+
     /// <summary>What this account is allowed to do.</summary>
     public UserRole Role { get; private set; }
 
@@ -105,6 +111,19 @@ public sealed class User
             StaffId = staff,
             CreatedAt = createdAt.Offset == TimeSpan.Zero ? createdAt : createdAt.ToUniversalTime()
         };
+    }
+
+    /// <summary>
+    /// Replaces the bcrypt hash after a reset link is accepted.
+    /// The stamp is whole seconds so the JWT claim and the stored instant stay equal.
+    /// </summary>
+    /// <param name="passwordHash">New bcrypt hash.</param>
+    /// <param name="changedAt">UTC time of the reset.</param>
+    public void ChangePassword(string passwordHash, DateTimeOffset changedAt)
+    {
+        PasswordHash = Guard.Required(passwordHash, nameof(passwordHash), UserConstraints.PasswordHashMaxLength);
+        var utc = changedAt.Offset == TimeSpan.Zero ? changedAt : changedAt.ToUniversalTime();
+        PasswordChangedAt = new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, utc.Second, TimeSpan.Zero);
     }
 
     private static string? OptionalId(string? value, string name)

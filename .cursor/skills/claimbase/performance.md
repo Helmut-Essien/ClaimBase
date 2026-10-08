@@ -19,7 +19,7 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 | FluentValidation | One validator per write command. Lengths match Domain and Shared DTOs. |
 | EF Core | Fluent configuration classes, migrations generated from the model, no lazy loading, `AsNoTracking` on reads, global query filter for `TenantId`, `ExecuteUpdate` / set-based SQL for bulk presence flags. Do not edit migration snapshots by hand. |
 | PostgreSQL | `timestamptz` for instants, `numeric` for money, partial or composite indexes that match the `WHERE` clause, `ILIKE` for search. |
-| JWT | Validate issuer, audience, and lifetime. Read tenant and role from claims. Do not trust ids in the body for authorization. |
+| JWT | Validate issuer, audience, and lifetime. Read tenant and role from claims. Do not trust ids in the body for authorization. After a password reset, compare the `pwd` claim with one primary-key read. Do not add a session cache. |
 | Hangfire | Enqueue a job with an explicit `TenantId` argument. Keep the job idempotent. Do not capture an HTTP `HttpContext`. |
 | QuestPDF | Compose from the snapshotted claim lines. Stream the response. Do not re-query live rates while painting an approved claim. |
 | Angular | Standalone components, `inject()`, `OnPush`, Signals, lazy `loadComponent` / `loadChildren`, typed reactive forms, `takeUntilDestroyed()`. The feature `data/` folder owns HTTP. `core/` does not import features. |

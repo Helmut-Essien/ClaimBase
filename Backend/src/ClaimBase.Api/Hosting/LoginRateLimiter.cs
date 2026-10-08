@@ -4,14 +4,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace ClaimBase.Api.Hosting;
 
-/// <summary>Limits password attempts without slowing <c>GET /api/auth/me</c>.</summary>
+/// <summary>Limits login, forgot-password, and reset-password without slowing <c>GET /api/auth/me</c>.</summary>
 public static class LoginRateLimiter
 {
     /// <summary>Policy name used by the login action.</summary>
     public const string PolicyName = "login";
 
     /// <summary>
-    /// Adds a fixed window of 10 login attempts per minute per client IP, and the same window per email.
+    /// Adds a fixed window of 10 attempts per minute per client IP, and the same window per email.
+    /// Login, forgot-password, and reset-password share both windows.
     /// The Testing host raises both windows so the suite can sign in for every case.
     /// </summary>
     /// <param name="services">The service collection.</param>

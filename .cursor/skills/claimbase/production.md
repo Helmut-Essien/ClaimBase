@@ -6,15 +6,15 @@ Read from [SKILL.md](SKILL.md) when implementing a slice. Generate as if Product
 
 1. No placeholders (`TODO`, `FIXME`, `NotImplementedException` stubs).
 2. No committed Production secrets. Development JWT and database password stay in `appsettings.Development.json`. `appsettings.json` ships empty secrets. Development and Testing json are `CopyToPublishDirectory=Never`.
-3. Production fails fast via `StartupConfiguration.Validate`: Development JWT key, development database password, and `Include Error Detail` refuse to boot. JWT key length ≥ 64 in Production.
+3. Production fails fast via `StartupConfiguration.Validate`: Development JWT key, development database password, and `Include Error Detail` refuse to boot. JWT key length ≥ 64 in Production. `Portal:BaseUrl` must be absolute `https`. `Email:Host` and `Email:FromAddress` are required.
 4. New env vars use `__` nesting and are documented in [reference.md](reference.md) and [README.md](../../../README.md) in the same slice.
 5. `dotnet test ClaimBase.sln` and the Portal production build must succeed for slices that contain those projects.
 6. Honest empties. Do not seed fake claims or hide unfinished buttons that call missing APIs.
 
 ## Backend
 
-- **Secrets:** never log passwords, JWTs, or raw biometric workbook bytes. Redact those property names in Serilog.
-- **Auth:** maximum length on login password (DoS bound). Unknown-email login still runs a dummy password verify so timing does not enumerate users. Rate-limit login separately from `/api/auth/me`.
+- **Secrets:** never log passwords, reset tokens, reset URLs, JWTs, or raw biometric workbook bytes. Redact those property names in Serilog.
+- **Auth:** maximum length on login password and on the reset token (DoS bound). Unknown-email login still runs a dummy password verify so timing does not enumerate users. Forgot-password returns one message for an unknown address, a shared address, and a real account. The request only looks up the email and queues the same follow-up for every result, so writing the link and talking to SMTP cannot enumerate users. Never return or log the raw reset token in Production. Rate-limit login, forgot-password, and reset-password together, and do not apply that limit to `/api/auth/me`.
 - **Tenancy:** every business table has `TenantId` and the global query filter. Handlers read the tenant from JWT. Cross-tenant ids → 404.
 - **Roles:** authorize on the controller. HoD queries add `DepartmentId` from the token. Do not trust a department id from the body.
 - **Uploads:** the biometric endpoint accepts `.xlsx` only, with a size cap (16 MB). Other endpoints keep a small JSON body cap.

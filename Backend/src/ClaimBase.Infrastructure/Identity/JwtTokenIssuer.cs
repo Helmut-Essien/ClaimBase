@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -10,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace ClaimBase.Infrastructure.Identity;
 
 /// <summary>
-/// Signs access tokens. Claims are <c>sub</c>, <c>tenantId</c>, <c>role</c>, and <c>departmentId</c> only for a head of department.
+/// Signs access tokens. Claims are <c>sub</c>, <c>tenantId</c>, <c>role</c>, <c>departmentId</c> for a head of department, and <c>pwd</c> after a password reset.
 /// </summary>
 public sealed class JwtTokenIssuer : IJwtTokenIssuer
 {
@@ -46,6 +47,14 @@ public sealed class JwtTokenIssuer : IJwtTokenIssuer
                 throw new InvalidOperationException("Head of department is missing DepartmentId.");
 
             claims.Add(new Claim("departmentId", account.DepartmentId));
+        }
+
+        // Absent until the first reset. After a reset, tokens without this stamp no longer match the user row.
+        if (account.PasswordChangedAt is { } changedAt)
+        {
+            claims.Add(new Claim(
+                AuthClaimTypes.PasswordChangedAt,
+                changedAt.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)));
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));

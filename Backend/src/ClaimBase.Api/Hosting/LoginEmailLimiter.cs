@@ -68,7 +68,7 @@ public sealed class LoginEmailLimiter : IDisposable
     }
 }
 
-/// <summary>Rejects a login that has used its email window. The IP window is a separate policy.</summary>
+/// <summary>Rejects a login, forgot-password, or reset that has used its email window. The IP window is a separate policy.</summary>
 public sealed class LoginEmailRateLimitFilter : IAsyncActionFilter
 {
     private readonly LoginEmailLimiter _limiter;
@@ -89,7 +89,7 @@ public sealed class LoginEmailRateLimitFilter : IAsyncActionFilter
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        var email = context.ActionArguments.Values.OfType<LoginRequest>().FirstOrDefault()?.Email;
+        var email = context.ActionArguments.Values.Select(EmailOf).FirstOrDefault(value => value is not null);
         if (!await _limiter.TryConsumeAsync(email, context.HttpContext.RequestAborted))
         {
             context.Result = new StatusCodeResult(StatusCodes.Status429TooManyRequests);
@@ -98,4 +98,13 @@ public sealed class LoginEmailRateLimitFilter : IAsyncActionFilter
 
         await next();
     }
+
+    /// <summary>Email from login, forgot-password, or reset-password. Those three share one window per address.</summary>
+    private static string? EmailOf(object? argument) => argument switch
+    {
+        LoginRequest login => login.Email,
+        ForgotPasswordRequest forgot => forgot.Email,
+        ResetPasswordRequest reset => reset.Email,
+        _ => null
+    };
 }

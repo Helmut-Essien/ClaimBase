@@ -42,15 +42,26 @@ Centered card on `#F8F9FA`, max width 1152px, 12px radius. The page behind the c
 
 **Route:** `/login/forgot-password` (guest). Same shell as sign-in.
 
-Today there is no reset email. The page tells the staff member that a tenant admin sets the password, and the only action is "Back to sign in". It does not collect a new password and does not write the login draft.
+The page calls `POST /api/auth/forgot-password` and keeps the sign-in shell:
 
-When reset email is implemented, replace that body and keep the route and the shell:
-
-- One email field, same `AUTH_FIELD_LIMITS` as sign-in. Submit lowercases the trimmed address. Prefill from the login draft is fine. Do not store a password.
+- One email field, same `AUTH_FIELD_LIMITS` as sign-in, plus `resetToken: 128` for the reset page. Submit lowercases the trimmed address. Prefill from the login draft is fine. Do not store a password.
 - Primary button: "Send reset link". While the request is in flight, disable it and show "Please wait…".
-- The confirmation is the same whether or not the address is on file: "If that email belongs to a staff account, a reset link is on its way."
-- "Back to sign in" becomes the text link. The purple button is the send action.
-- Choosing the new password is a later step on the link from that email. Same password limits. Nothing from that step is written to `localStorage`.
+- Show the API message either way: "If that email belongs to a staff account, a reset link is on its way." Do not add a branch for "email not found".
+- "Back to sign in" is the text link. The purple button is the send action.
+- Nothing from this step is written to `localStorage`.
+
+### Reset password
+
+**Route:** `/login/reset-password` (guest). Query: `email`, `token`. Same shell as sign-in. The email link is the only way onto this page.
+
+- If either query value is missing, or the token is longer than 128 characters, show "This reset link is invalid. Request a new one." and a link to `/login/forgot-password`. Do not show the password fields.
+- Read `email` and `token` once, then remove them from the address bar so the raw token is not left in history. A rejected stored session must not navigate away from this link.
+- New password and confirm password. Same password limits as sign-in. Both start masked, each with a closed-eye control. They are not stored.
+- Primary button: "Reset password". While the request is in flight, disable it and show "Please wait…".
+- `POST /api/auth/reset-password` with `email`, `token`, `newPassword`, `confirmPassword`.
+- Success shows "Password has been reset successfully." and a "Back to sign in" link. Do not sign the user in from this page.
+- HTTP 400 shows "Invalid reset token." and a link to request a new one. A mismatch stays on the form.
+- Nothing from this step is written to `localStorage`.
 
 ---
 

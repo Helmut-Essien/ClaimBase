@@ -101,7 +101,7 @@ Amount text stays `slate` whether or not the checkmark is set.
 
 ### Forms and tables
 
-- Labels above fields, 14px semibold, sentence case. Sign-in labels are 12px semibold. A text link may sit on the same row as the password label. Focus ring uses primary purple and appears on focus only.
+- Labels above fields, 14px semibold, sentence case. Sign-in labels are 12px semibold. A text link may sit on the same row as the password label. Forgot password and reset password use that same sign-in card. Focus ring uses primary purple and appears on focus only.
 - Sign-in hints state real browser behavior: the last email is remembered, and the password is not stored.
 - Errors: tinted banner plus the field message. The hint stays associated with the field when the error is showing.
 - Desktop tables: small-caps-style headers (`label-sm`), hairline dividers.

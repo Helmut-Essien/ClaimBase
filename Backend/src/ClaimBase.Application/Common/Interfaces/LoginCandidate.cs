@@ -12,6 +12,7 @@ namespace ClaimBase.Application.Common.Interfaces;
 /// <param name="DepartmentId">Department id for a head of department.</param>
 /// <param name="TenantName">Tenant name copied into the login response.</param>
 /// <param name="CurrencyCode">Tenant currency.</param>
+/// <param name="PasswordChangedAt">Last reset instant, or null when the password has never been reset.</param>
 public sealed record LoginCandidate(
     string UserId,
     string TenantId,
@@ -21,4 +22,5 @@ public sealed record LoginCandidate(
     UserRole Role,
     string? DepartmentId,
     string TenantName,
-    string CurrencyCode);
+    string CurrencyCode,
+    DateTimeOffset? PasswordChangedAt = null);

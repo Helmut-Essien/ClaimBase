@@ -27,12 +27,26 @@ export interface MeResponse {
 }
 
 /**
- * Bounds shared with the API login contract.
- * Email 320, password 8–128.
+ * Bounds shared with `AuthFieldLimits` and the password-reset token column.
+ * Email 320, password 8–128, reset token 128 on the wire.
  */
 export const AUTH_FIELD_LIMITS = {
   email: 320,
   passwordMin: 8,
   passwordMax: 128,
+  resetToken: 128,
   displayName: 200,
 } as const;
+
+/** Copy returned by the password-reset API. The forgot message does not say whether the email exists. */
+export const PASSWORD_RESET_COPY = {
+  linkSent: 'If that email belongs to a staff account, a reset link is on its way.',
+  reset: 'Password has been reset successfully.',
+  invalidToken: 'Invalid reset token.',
+  invalidLink: 'This reset link is invalid. Request a new one.',
+} as const;
+
+/** Body returned by `POST /api/auth/forgot-password` and `POST /api/auth/reset-password`. */
+export interface PasswordResetMessage {
+  message: string;
+}

@@ -14,7 +14,7 @@ description: >-
   indexed queries, async I/O, OnPush screens, and commands off the UI
   thread. Use for this repo, any implementation slice, tenants,
   semesters, courses, rates, sessions, claims, biometric import, PDF,
-  Portal, or MobileApp.
+  Portal, MobileApp, forgot password, or reset password.
 ---
 
 # ClaimBase
@@ -45,7 +45,7 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 6. **Constraints are full-stack** — any new field limit ships in the same slice on Domain + EF + FluentValidation + Shared DTOs and on the client that edits it (Portal `*_FIELD_LIMITS` or MAUI constants). Checklist: [reference.md](reference.md).
 7. **Document generated code in the same edit** — a slice is incomplete without it. Every public C# member gets XML (`///`). Every exported Portal symbol gets JSDoc (`/** */`). Inline comments capture product rules a later edit might "simplify" (semester gate, rate snapshot, transport once per day, biometric flag not changing amount, tenant filter, approved-claim freeze, offline `clientId`). Do not narrate obvious lines. Full rules: [documentation.md](documentation.md).
 8. **Production-ready by default** — [production.md](production.md).
-9. **Fast, and idiomatic for each stack** — generated code is highly optimized for the hot path and follows both ClaimBase product rules and the usual best practices of Clean Architecture, ASP.NET Core, EF Core, MediatR, FluentValidation, Angular, MAUI MVVM, PostgreSQL, JWT, Hangfire, and QuestPDF. Page and index queries, project DTOs in SQL, stay async, lazy-load Portal routes with `OnPush`, and keep MAUI work off the UI thread. Do not add Redis or a second cache. Full rules: [performance.md](performance.md). Hangfire is only for biometric import and presence-flag refresh.
+9. **Fast, and idiomatic for each stack** — generated code is highly optimized for the hot path and follows both ClaimBase product rules and the usual best practices of Clean Architecture, ASP.NET Core, EF Core, MediatR, FluentValidation, Angular, MAUI MVVM, PostgreSQL, JWT, Hangfire, and QuestPDF. Page and index queries, project DTOs in SQL, stay async, lazy-load Portal routes with `OnPush`, and keep MAUI work off the UI thread. Do not add Redis or a second cache. Full rules: [performance.md](performance.md). Hangfire is only for biometric import and presence-flag refresh. Password-reset email uses a background channel, not Hangfire.
 
 ## Technology stack
 
@@ -57,8 +57,8 @@ Multi-tenant SaaS that pays university lecturers for sessions they log. Companio
 | ORM | EF Core + Npgsql |
 | Database | PostgreSQL (Docker) |
 | IDs | ULID strings via NUlid (`Ulid.NewUlid().ToString()`), 26 characters. Never `Guid` and never the `Ulid` type on the wire |
-| Auth | ClaimBase-issued JWT |
-| Passwords | BCrypt |
+| Auth | ClaimBase-issued JWT. Forgot-password and reset-password use a one-hour single-use link |
+| Passwords | BCrypt. A reset stores only the SHA-256 hash of the link token |
 | Jobs | Hangfire (biometric import, presence refresh) |
 | PDF | QuestPDF, generated on request |
 | Excel | ClosedXML (or equivalent) for biometric workbooks |
@@ -121,7 +121,8 @@ This is a modular monolith: one API process, feature folders (`Identity`, `Acade
 
 - **Tenant** is the university. Every business table has `TenantId`. EF global query filter from JWT `tenantId`.
 - Cross-tenant ids return 404.
-- JWT claims: `sub` = userId, `tenantId`, `role`, `departmentId` when the user is a Head of Department.
+- JWT claims: `sub` = userId, `tenantId`, `role`, `departmentId` when the user is a Head of Department, and `pwd` (unix seconds) after a password reset.
+- Forgot password always returns the same message. A link is sent only when exactly one account uses that email. The raw token is emailed, never stored, never logged in Production, and never returned by the API. The link lasts one hour. A newer request replaces the unused link. Reset updates the password and rejects access tokens issued before that change. Lecturers use the same API; the link opens the Portal.
 - Roles: `TenantAdmin`, `Admin`, `HeadOfDepartment`, `Finance`, `Lecturer`.
 - Lecturers use MobileApp. Portal accounts are the other four roles.
 - A campus belongs to the university. A faculty belongs to one campus, and a faculty contains departments. Faculty names are unique on that campus, so two campuses may each have a Faculty of Science. A lecturer is assigned to at least one department and may be assigned to more, including departments on different campuses.

@@ -13,9 +13,14 @@ public sealed class SecretRedactingPolicy : IDestructuringPolicy
     {
         "Password",
         "PasswordHash",
+        "NewPassword",
+        "ConfirmPassword",
         "JwtKey",
         "Key",
         "Token",
+        "TokenHash",
+        "RawToken",
+        "ResetUrl",
         "AccessToken"
     };
 

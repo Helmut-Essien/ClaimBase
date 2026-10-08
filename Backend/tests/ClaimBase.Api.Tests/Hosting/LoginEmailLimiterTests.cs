@@ -34,4 +34,16 @@ public class LoginEmailLimiterTests
             .Cast<Microsoft.AspNetCore.Mvc.ServiceFilterAttribute>()
             .Should().Contain(attribute => attribute.ServiceType == typeof(LoginEmailRateLimitFilter));
     }
+
+    [Theory]
+    [InlineData("ForgotPassword")]
+    [InlineData("ResetPassword")]
+    public void PasswordResetActions_UseTheSameEmailFilter(string actionName)
+    {
+        var method = typeof(ClaimBase.Api.Controllers.AuthController).GetMethod(actionName);
+
+        method!.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.ServiceFilterAttribute), inherit: false)
+            .Cast<Microsoft.AspNetCore.Mvc.ServiceFilterAttribute>()
+            .Should().Contain(attribute => attribute.ServiceType == typeof(LoginEmailRateLimitFilter));
+    }
 }
