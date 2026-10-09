@@ -71,4 +71,34 @@ describe('SemestersComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Another open semester already covers these dates.');
     http.verify();
   });
+
+  it('keeps the edit banner on the original name while the field changes', () => {
+    const fixture = TestBed.createComponent(SemestersComponent);
+    const http = TestBed.inject(HttpTestingController);
+    const draft: Semester = {
+      id: 'semester',
+      name: '2026/27',
+      startDate: '2026-08-01',
+      endDate: '2026-12-20',
+      status: 'Draft',
+    };
+    http.expectOne(`${environment.apiUrl}/api/semesters?page=1&pageSize=20`).flush({
+      items: [draft],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.edit(draft);
+    fixture.detectChanges();
+    fixture.componentInstance.form.controls.name.setValue('Renamed');
+    fixture.detectChanges();
+
+    const status = fixture.nativeElement.querySelector('[role="status"]') as HTMLElement;
+    expect(status.textContent).toContain('Editing 2026/27.');
+    expect(status.textContent).not.toContain('Renamed');
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('#semester-name'));
+    http.verify();
+  });
 });

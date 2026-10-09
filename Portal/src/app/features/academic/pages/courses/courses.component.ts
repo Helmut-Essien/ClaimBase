@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -22,6 +22,7 @@ import { ACADEMIC_FIELD_LIMITS, Course, Qualification } from '../../data/academi
 export class CoursesComponent {
   private readonly api = inject(AcademicApi);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private qualificationGeneration = 0;
   private courseGeneration = 0;
 
@@ -56,6 +57,9 @@ export class CoursesComponent {
 
   /** Course being updated. Null creates a new course. */
   readonly editingId = signal<string | null>(null);
+
+  /** Code captured when Edit is pressed. The live region must not follow each keystroke. */
+  readonly editingCode = signal<string | null>(null);
 
   readonly qualificationForm = inject(FormBuilder).nonNullable.group({
     name: ['', [requiredTrimmed(), Validators.maxLength(ACADEMIC_FIELD_LIMITS.shortName)]],
@@ -189,6 +193,7 @@ export class CoursesComponent {
   /** Fills the form from a course. The code stays uppercase. */
   edit(course: Course): void {
     this.editingId.set(course.id);
+    this.editingCode.set(course.code);
     this.courseError.set(null);
     if (!this.choices().some((item) => item.id === course.qualificationId)) {
       this.choices.update((items) => [
@@ -201,11 +206,31 @@ export class CoursesComponent {
       name: course.name,
       qualificationId: course.qualificationId,
     });
+    // The list scrolls away. Keep the keyboard on the field that is now being edited.
+    const code = document.getElementById('course-code');
+    if (code instanceof HTMLElement) {
+      code.focus({ preventScroll: true });
+    }
+    this.revealForm();
+  }
+
+  /** The course form sits above its list. Edit would otherwise leave the filled code off screen. */
+  private revealForm(): void {
+    afterNextRender(
+      () => {
+        const form = document.getElementById('course-form');
+        if (form && typeof form.scrollIntoView === 'function') {
+          form.scrollIntoView({ block: 'start' });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   /** Returns the form to creating a course. */
   cancelEdit(): void {
     this.editingId.set(null);
+    this.editingCode.set(null);
     this.courseError.set(null);
     const qualificationId = this.courseForm.controls.qualificationId.value;
     this.courseForm.reset({ code: '', name: '', qualificationId });

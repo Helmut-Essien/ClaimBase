@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { canManageSetup } from '../../../core/auth/portal-role';
+import { TenantStateService } from '../../../core/tenant/tenant-state.service';
+import { formatCalendarDate, zoneAbbreviation } from '../../../shared/dates/calendar-date';
 import { AcademicApi } from '../../academic/data/academic.api';
 import { PAGE_LIMITS } from '../../../shared/paging/page-limits';
 
@@ -20,6 +22,7 @@ import { PAGE_LIMITS } from '../../../shared/paging/page-limits';
 export class HomeComponent {
   private readonly auth = inject(AuthService);
   private readonly semesters = inject(AcademicApi);
+  private readonly tenant = inject(TenantStateService);
   private readonly destroyRef = inject(DestroyRef);
 
   /** Tenant admins and admins can open a semester. Other roles cannot call that API. */
@@ -31,6 +34,9 @@ export class HomeComponent {
   /** Name of the open semester, once the list returns. */
   readonly openSemester = signal<string | null>(null);
 
+  /** Inclusive dates of that semester, shown once the name is known. */
+  readonly openSemesterSpan = signal<string | null>(null);
+
   /** True when an admin's semester list has no Open row. */
   readonly noOpenSemester = signal(false);
 
@@ -39,6 +45,12 @@ export class HomeComponent {
 
   /** Shown when the semester list fails. */
   readonly semesterError = signal<string | null>(null);
+
+  /** Zone caption for the open semester's dates. Calendar days are not instants. */
+  zoneCaption(): string {
+    const id = this.tenant.timeZoneId();
+    return `${id} (${zoneAbbreviation(id)})`;
+  }
 
   constructor() {
     if (!this.canSetup) {
@@ -52,6 +64,9 @@ export class HomeComponent {
         next: (result) => {
           const open = result.items.find((semester) => semester.status === 'Open');
           this.openSemester.set(open?.name ?? null);
+          this.openSemesterSpan.set(
+            open ? `${formatCalendarDate(open.startDate)} – ${formatCalendarDate(open.endDate)}` : null,
+          );
           this.noOpenSemester.set(!open);
           this.loadingSemester.set(false);
         },

@@ -18,6 +18,30 @@ export function formatCalendarDate(value: string): string {
 }
 
 /**
+ * Today's calendar day in the tenant zone, as `yyyy-MM-dd`.
+ * Falls back to UTC when the zone id cannot be resolved.
+ */
+export function calendarToday(timeZone: string, now = new Date()): string {
+  const zone = zoneOrUtc(timeZone);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: zone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
+/** Keeps an unknown zone from throwing inside `Intl`. */
+function zoneOrUtc(timeZone: string): string {
+  try {
+    new Intl.DateTimeFormat('en-GB', { timeZone }).format(new Date());
+    return timeZone;
+  } catch {
+    return 'UTC';
+  }
+}
+
+/**
  * Short zone name for the once-per-page caption, such as GMT for Africa/Accra.
  * Falls back to the IANA id when the zone cannot be resolved.
  */

@@ -140,6 +140,7 @@ This is a modular monolith: one API process, feature folders (`Identity`, `Acade
 - Shared DTO annotations match FluentValidation and EF `HasMaxLength`.
 - Portal: standalone components, `inject()`, `OnPush`, lazy feature routes, Tailwind. Visuals: [claimbase-design-system](../claimbase-design-system/SKILL.md). UX: [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
 - Portal state: Signals. No NgRx. `takeUntilDestroyed()` for RxJS. `@for` tracks entity id.
+- Portal catalogs use `app-pager` at `PAGE_LIMITS.defaultSize`. Dropdowns and the rate-matrix axes are one `maxSize` lookup and say when that page is short. Do not concatenate pages in the browser. Details: [performance.md](performance.md) and [claimbase-ui-ux](../claimbase-ui-ux/SKILL.md).
 - Money: `numeric(18,2)`, non-negative. Currency code lives on the tenant and is snapshotted onto the claim. Default tenant currency is `GHS`.
 - Instants are `timestamptz` (UTC). Calendar days use the tenant time zone (default `Africa/Accra`).
 - **Comments and docs are part of the code**, not a follow-up. Follow [documentation.md](documentation.md) for every new or changed file in the slice. CS1591 is a build error on `Backend/src` and `MobileApp`.

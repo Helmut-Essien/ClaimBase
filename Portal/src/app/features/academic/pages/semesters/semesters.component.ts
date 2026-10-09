@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 
@@ -25,6 +25,7 @@ export class SemestersComponent {
   private readonly api = inject(AcademicApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly tenant = inject(TenantStateService);
+  private readonly injector = inject(Injector);
   private loadGeneration = 0;
 
   /** Shared with `AcademicFieldLimits.Name`. */
@@ -52,6 +53,9 @@ export class SemestersComponent {
 
   /** Id being edited. Null means the form creates a draft. */
   readonly editingId = signal<string | null>(null);
+
+  /** Name captured when Edit is pressed. The live region must not follow each keystroke. */
+  readonly editingName = signal<string | null>(null);
 
   /** Create, update, open, or close failure. A 409 overlap stays here. */
   readonly errorMessage = signal<string | null>(null);
@@ -122,17 +126,38 @@ export class SemestersComponent {
       return;
     }
     this.editingId.set(semester.id);
+    this.editingName.set(semester.name);
     this.errorMessage.set(null);
     this.form.setValue({
       name: semester.name,
       startDate: semester.startDate.slice(0, 10),
       endDate: semester.endDate.slice(0, 10),
     });
+    // The list scrolls away. Keep the keyboard on the field that is now being edited.
+    const name = document.getElementById('semester-name');
+    if (name instanceof HTMLElement) {
+      name.focus({ preventScroll: true });
+    }
+    this.revealForm();
+  }
+
+  /** The form sits above the list. Edit on a lower row would otherwise leave the filled fields off screen. */
+  private revealForm(): void {
+    afterNextRender(
+      () => {
+        const form = document.getElementById('semester-form');
+        if (form && typeof form.scrollIntoView === 'function') {
+          form.scrollIntoView({ block: 'start' });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   /** Returns the form to creating a draft. */
   cancelEdit(): void {
     this.editingId.set(null);
+    this.editingName.set(null);
     this.errorMessage.set(null);
     this.form.reset();
   }

@@ -2,6 +2,8 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 import { RATE_FIELD_LIMITS } from './rates.models';
 
+export { calendarToday } from '../../../shared/dates/calendar-date';
+
 /** A dated amount. The end day is excluded. A null end has not been replaced. */
 export interface DatedAmount {
   /** Row id. */
@@ -40,20 +42,6 @@ export function rateInForce<T extends DatedAmount>(rates: readonly T[], day: str
 }
 
 /**
- * Today's calendar day in the tenant zone, as `yyyy-MM-dd`.
- * Falls back to UTC when the zone id cannot be resolved.
- */
-export function calendarToday(timeZone: string, now = new Date()): string {
-  const zone = zoneOrUtc(timeZone);
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: zone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
-}
-
-/**
  * Renders cedis with the tenant currency code and two decimal places.
  * Example: `GHS 1,250.00`.
  */
@@ -78,13 +66,4 @@ export function cedisAmount(control: AbstractControl): ValidationErrors | null {
     return { amount: true };
   }
   return null;
-}
-
-function zoneOrUtc(timeZone: string): string {
-  try {
-    new Intl.DateTimeFormat('en-GB', { timeZone }).format(new Date());
-    return timeZone;
-  } catch {
-    return 'UTC';
-  }
 }

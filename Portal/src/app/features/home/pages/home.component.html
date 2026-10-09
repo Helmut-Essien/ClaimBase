@@ -1,5 +1,5 @@
 <h1 class="page-title">Home</h1>
-<p class="mt-1 max-w-xl text-sm text-muted">
+<p class="page-lede">
   @if (displayName()) {
     Welcome, {{ displayName() }}.
   }
@@ -7,13 +7,11 @@
 </p>
 
 @if (!canSetup) {
-  <p class="mt-4 max-w-xl text-sm text-muted">An administrator opens the semester.</p>
+  <p class="cb-note max-w-xl">An administrator opens the semester.</p>
 } @else if (loadingSemester()) {
   <p class="mt-4 max-w-xl text-sm text-muted">Please wait…</p>
 } @else if (semesterError()) {
   <p class="cb-banner" role="alert">{{ semesterError() }}</p>
-} @else if (openSemester(); as name) {
-  <p class="mt-4 max-w-xl text-sm text-muted">Open semester: {{ name }}.</p>
 } @else if (noOpenSemester()) {
   <div class="cb-empty">
     <p class="font-semibold text-slate">No open semester</p>
@@ -22,16 +20,35 @@
   </div>
 }
 
-<dl class="mt-6 grid gap-4 sm:grid-cols-2">
-  <div class="cb-card">
-    <dt class="text-sm text-muted">Claims awaiting you</dt>
-    <dd class="mt-1 text-2xl font-bold text-slate">0</dd>
+<div class="mt-6 grid gap-4 lg:grid-cols-2">
+  @if (canSetup && openSemester(); as name) {
+    <section class="cb-card lg:col-span-2">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-sm text-muted">Open semester: {{ name }}.</p>
+          @if (openSemesterSpan(); as span) {
+            <p class="mt-1 text-base font-semibold text-slate">{{ span }}</p>
+            <p class="mt-1 text-sm text-muted">{{ zoneCaption() }}</p>
+          }
+        </div>
+        <span class="chip chip-open">Open</span>
+      </div>
+      <a class="mt-3 inline-flex h-11 items-center text-sm font-semibold text-ink" routerLink="/app/semesters">
+        Review semesters
+      </a>
+    </section>
+  }
+  <div class="cb-stat">
+    <p class="text-sm text-muted">Claims awaiting you</p>
+    <p class="mt-1 text-3xl font-bold text-slate tabular-nums">0</p>
+    <p class="mt-2 text-sm text-muted">Claims waiting on your role. None until sessions are built into a claim.</p>
   </div>
-  <div class="cb-card">
-    <dt class="text-sm text-muted">Sessions omitted for a missing rate</dt>
-    <dd class="mt-1 text-2xl font-bold text-slate">0</dd>
+  <div class="cb-stat">
+    <p class="text-sm text-muted">Sessions omitted for a missing rate</p>
+    <p class="mt-1 text-3xl font-bold text-slate tabular-nums">0</p>
+    <p class="mt-2 text-sm text-muted">A missing rate leaves the session off the claim. It is not stored as zero.</p>
   </div>
-</dl>
+</div>
 
 <div class="cb-empty">
   <p class="font-semibold text-slate">No recent claims</p>

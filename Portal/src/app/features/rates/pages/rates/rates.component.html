@@ -1,11 +1,12 @@
 <h1 class="page-title">Rates</h1>
-<p class="mt-1 max-w-xl text-sm text-muted">
+<p class="page-lede">
   This schedule belongs to the university, not to a semester or a campus. An amount with no end date keeps applying in
   later semesters. Dates with no row are omitted from claims. They are not stored as zero. Dates use {{ zoneCaption() }}.
 </p>
 
-<h2 class="mt-8 text-lg font-semibold text-ink">Teaching rates</h2>
-<p class="mt-1 max-w-xl text-sm text-muted">Cedis per hour for one position and one qualification. Saving a cell adds one row.</p>
+<section class="mt-8">
+<h2 class="text-lg font-semibold text-ink">Teaching rates</h2>
+<p class="page-lede">{{ hourlyLabel() }} for one position and one qualification. Saving a cell adds one row. Other cells stay as they are.</p>
 
 @if (catalogError()) {
   <p class="cb-banner" role="alert">{{ catalogError() }}</p>
@@ -32,35 +33,35 @@
   </p>
 } @else {
   <!-- Qualifications stay in columns on a phone, so the grid scrolls sideways instead of stacking cells. -->
-  <div class="mt-4 overflow-x-auto">
-    <table class="w-full min-w-[32rem] border-collapse">
+  <p class="mt-4 text-sm text-muted lg:hidden">Scroll sideways to see every qualification.</p>
+  <div class="mt-3 overflow-x-auto">
+    <table class="cb-sheet w-full min-w-[32rem] border-collapse">
       <thead>
         <tr>
-          <th class="cb-th">Position</th>
+          <th class="cb-th" scope="col">Position</th>
           @for (qualification of qualifications(); track qualification.id) {
-            <th class="cb-th">{{ qualification.name }}</th>
+            <th class="cb-th" scope="col">{{ qualification.name }}</th>
           }
         </tr>
       </thead>
       <tbody>
         @for (row of matrix(); track row.title.id) {
           <tr>
-            <th class="cb-td text-left font-semibold text-ink">{{ row.title.name }}</th>
+            <th class="cb-td text-left font-semibold text-ink" scope="row">{{ row.title.name }}</th>
             @for (cell of row.cells; track cell.qualification.id) {
               <td class="cb-td">
                 <button
                   type="button"
-                  class="min-h-11 w-full rounded-md px-2 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-                  [class.ring-2]="isSelected(row.title.id, cell.qualification.id)"
-                  [class.ring-ink]="isSelected(row.title.id, cell.qualification.id)"
+                  class="cb-rate-cell"
+                  [class.cb-rate-cell-selected]="isSelected(row.title.id, cell.qualification.id)"
                   [attr.aria-pressed]="isSelected(row.title.id, cell.qualification.id)"
                   (click)="selectCell(row.title.id, cell.qualification.id)"
                 >
                   @if (cell.rate) {
-                    <span class="tabular-nums">{{ money(cell.rate.amount) }}</span>
-                    <span class="mt-1 block text-sm text-muted">{{ rangeLabel(cell.rate) }}</span>
+                    <span class="font-semibold text-slate tabular-nums">{{ money(cell.rate.amount) }}</span>
+                    <span class="text-sm text-muted">{{ rangeLabel(cell.rate) }}</span>
                   } @else {
-                    <span>No rate</span>
+                    <span class="cb-gap">No rate</span>
                   }
                 </button>
               </td>
@@ -72,7 +73,12 @@
   </div>
 }
 
-<form class="cb-form mt-6 max-w-xl" [formGroup]="teachingForm" (ngSubmit)="submitTeaching()" novalidate>
+<form id="teaching-rate" class="cb-form cb-anchor mt-6 max-w-xl" [formGroup]="teachingForm" (ngSubmit)="submitTeaching()" novalidate>
+  @if (pairCaption(); as pair) {
+    <p class="cb-edit-note" role="status">Saving one row for {{ pair }}.</p>
+  } @else {
+    <p class="mt-4 text-sm text-muted">Choose a cell above, or pick the position and qualification here.</p>
+  }
   <div class="grid gap-3 sm:grid-cols-2">
     <div>
       <label class="cb-label" for="teaching-title">Position</label>
@@ -105,7 +111,7 @@
     <p class="cb-field-error">Choose a qualification.</p>
   }
 
-  <label class="cb-label" for="teaching-amount">Cedis per hour</label>
+  <label class="cb-label" for="teaching-amount">{{ hourlyLabel() }}</label>
   <input id="teaching-amount" class="cb-input tabular-nums" type="text" inputmode="decimal" formControlName="amount" />
   @if (teachingForm.controls.amount.touched && teachingForm.controls.amount.invalid) {
     <p class="cb-field-error">Enter an amount with at most 2 decimal places.</p>
@@ -153,7 +159,7 @@
         </li>
       }
     </ul>
-    <table class="mt-4 hidden w-full border-collapse lg:table">
+    <table class="cb-sheet mt-4 hidden w-full border-collapse lg:table">
       <thead>
         <tr>
           <th class="cb-th">Amount</th>
@@ -178,13 +184,16 @@
   }
 }
 
-<h2 class="mt-10 text-lg font-semibold text-ink">Transport</h2>
-<p class="mt-1 max-w-xl text-sm text-muted">
+</section>
+
+<section class="mt-12">
+<h2 class="text-lg font-semibold text-ink">Transport</h2>
+<p class="page-lede">
   Paid once per teaching day, for every position. It is not an hourly rate. A day with no row is omitted from the claim.
 </p>
 
 <form class="cb-form mt-6 max-w-xl" [formGroup]="transportForm" (ngSubmit)="submitTransport()" novalidate>
-  <label class="cb-label" for="transport-amount">Cedis per teaching day</label>
+  <label class="cb-label" for="transport-amount">{{ dailyLabel() }}</label>
   <input id="transport-amount" class="cb-input tabular-nums" type="text" inputmode="decimal" formControlName="amount" />
   @if (transportForm.controls.amount.touched && transportForm.controls.amount.invalid) {
     <p class="cb-field-error">Enter an amount with at most 2 decimal places.</p>
@@ -220,7 +229,7 @@
 } @else if (loadingTransport() && transport().length === 0) {
   <p class="mt-8 text-base">Please wait…</p>
 } @else if (transport().length === 0) {
-  <p class="mt-8 text-base">No transport rate yet.</p>
+  <p class="cb-empty-compact max-w-xl">No transport rate yet.</p>
 } @else {
   <ul class="mt-8 space-y-3 lg:hidden">
     @for (rate of transport(); track rate.id) {
@@ -230,7 +239,7 @@
       </li>
     }
   </ul>
-  <table class="mt-8 hidden w-full border-collapse lg:table">
+  <table class="cb-sheet mt-8 hidden w-full border-collapse lg:table">
     <thead>
       <tr>
         <th class="cb-th">Amount</th>
@@ -253,3 +262,4 @@
     (pageChange)="loadTransport($event)"
   />
 }
+</section>

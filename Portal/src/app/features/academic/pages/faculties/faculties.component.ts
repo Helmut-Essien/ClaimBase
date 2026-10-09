@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, afterNextRender, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -23,28 +23,47 @@ import { ACADEMIC_FIELD_LIMITS, Campus, Department, Faculty } from '../../data/a
 export class FacultiesComponent {
   private readonly api = inject(AcademicApi);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private facultyGeneration = 0;
   private departmentGeneration = 0;
+  private campusPageGeneration = 0;
+  private campusChipsReady = false;
+  private campusChoicesReady = false;
 
   /** Shared with `AcademicFieldLimits.Name`. */
   readonly limits = ACADEMIC_FIELD_LIMITS;
 
-  /** Lookup page size for the campus chips. The API caps a page at 100. */
+  /** Lookup page size for the faculty form's campus dropdown. The API caps a page at 100. */
   readonly lookupSize = PAGE_LIMITS.maxSize;
 
   readonly pageSize = PAGE_LIMITS.defaultSize;
 
-  /** True until the campus chip request returns. */
+  /** True until the chip page and the form lookup have both returned. */
   readonly loadingCampuses = signal(true);
 
-  /** Campuses used as the parent of a faculty and as filter chips. */
+  /** Campuses on the current filter-chip page. */
   readonly campuses = signal<Campus[]>([]);
 
-  /** True when the tenant has more campuses than the chip row can show. */
-  readonly campusesTruncated = signal(false);
+  readonly campusPage = signal(1);
+  readonly campusTotal = signal(0);
+
+  /** Campuses offered when adding a faculty. A lookup, not the chip page. */
+  readonly campusChoices = signal<Campus[]>([]);
+
+  /** True when the faculty form's campus dropdown stopped at the lookup cap. */
+  readonly campusChoicesTruncated = signal(false);
 
   /** Null lists faculties on every campus. */
   readonly campusFilter = signal<string | null>(null);
+
+  /** Name of the filtered campus, kept when that chip is on another page. */
+  readonly campusFilterName = signal<string | null>(null);
+
+  /** Set when a campus chip page fails. */
+  readonly campusPageError = signal<string | null>(null);
+
+  /** Set when the faculty form's campus lookup fails. */
+  readonly campusChoiceError = signal<string | null>(null);
 
   readonly faculties = signal<Faculty[]>([]);
   readonly facultyPage = signal(1);
@@ -75,7 +94,8 @@ export class FacultiesComponent {
   });
 
   constructor() {
-    this.loadCampuses();
+    this.loadCampusPage(1);
+    this.loadCampusChoices();
     this.loadFaculties(1);
   }
 
@@ -99,8 +119,35 @@ export class FacultiesComponent {
 
   /** Limits the faculty page to one campus, or clears that filter. */
   filterCampus(campusId: string | null): void {
-    this.campusFilter.set(campusId);
+    if (!campusId) {
+      this.campusFilter.set(null);
+      this.campusFilterName.set(null);
+    } else {
+      const match = this.campuses().find((campus) => campus.id === campusId);
+      this.campusFilter.set(campusId);
+      if (match) {
+        this.campusFilterName.set(match.name);
+      }
+    }
     this.loadFaculties(1);
+  }
+
+  /**
+   * The filtered campus when it is not on the chip page now showing.
+   * The faculty list stays filtered, so the pressed chip has to stay in the group.
+   */
+  filteredCampusOffPage(): { id: string; name: string } | null {
+    const id = this.campusFilter();
+    const name = this.campusFilterName();
+    if (!id || !name || this.campuses().some((campus) => campus.id === id)) {
+      return null;
+    }
+    return { id, name };
+  }
+
+  /** Campus request that failed, if the page should say so. */
+  campusProblem(): string | null {
+    return this.campusPageError() ?? this.campusChoiceError();
   }
 
   /** Shows departments for this faculty. A department always displays its faculty. */
@@ -115,28 +162,85 @@ export class FacultiesComponent {
     this.departments.set([]);
     this.departmentTotal.set(0);
     this.loadDepartments(1);
+    this.revealDepartments();
   }
 
-  /** Loads campuses for the chips and the faculty form. */
-  loadCampuses(): void {
+  /**
+   * On a phone the department editor sits under the faculty list.
+   * Bring it up after a choice so the new faculty's departments are the thing on screen.
+   */
+  private revealDepartments(): void {
+    if (typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 64rem)').matches) {
+      return;
+    }
+    afterNextRender(
+      () => {
+        const pane = document.getElementById('faculty-departments');
+        if (pane && typeof pane.scrollIntoView === 'function') {
+          pane.scrollIntoView({ block: 'start' });
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /** Loads one page of campuses for the filter chips. */
+  loadCampusPage(page: number): void {
+    const generation = ++this.campusPageGeneration;
+    this.api
+      .listCampuses(page, this.pageSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          if (generation !== this.campusPageGeneration) {
+            return;
+          }
+          this.campuses.set(result.items);
+          this.campusPage.set(result.page);
+          this.campusTotal.set(result.totalCount);
+          this.campusPageError.set(null);
+          this.campusChipsReady = true;
+          this.revealCampuses();
+        },
+        error: (error: unknown) => {
+          if (generation !== this.campusPageGeneration) {
+            return;
+          }
+          this.loadingCampuses.set(false);
+          this.campusPageError.set(readApiError(error, 'Campuses could not be loaded.'));
+        },
+      });
+  }
+
+  /** Loads campuses for the faculty form. Further pages are not pulled into the browser. */
+  loadCampusChoices(): void {
     this.api
       .listCampuses(1, this.lookupSize)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          this.campuses.set(result.items);
-          this.campusesTruncated.set(result.totalCount > result.items.length);
-          this.loadingCampuses.set(false);
+          this.campusChoices.set(result.items);
+          this.campusChoicesTruncated.set(result.totalCount > result.items.length);
           const current = this.facultyForm.controls.campusId.value;
           if (!current && result.items.length > 0) {
             this.facultyForm.controls.campusId.setValue(result.items[0].id);
           }
+          this.campusChoiceError.set(null);
+          this.campusChoicesReady = true;
+          this.revealCampuses();
         },
         error: (error: unknown) => {
           this.loadingCampuses.set(false);
-          this.facultyLoadError.set(readApiError(error, 'Campuses could not be loaded.'));
+          this.campusChoiceError.set(readApiError(error, 'Campuses could not be loaded.'));
         },
       });
+  }
+
+  /** Shows the page once both campus requests have returned. */
+  private revealCampuses(): void {
+    if (this.campusChipsReady && this.campusChoicesReady) {
+      this.loadingCampuses.set(false);
+    }
   }
 
   /** Loads one page of faculties for the selected campus filter. */
@@ -237,10 +341,12 @@ export class FacultiesComponent {
           this.selectedFacultyId.set(created.id);
           this.departmentForm.reset();
           this.departmentError.set(null);
+          this.revealDepartments();
           // The new id is not on the current page yet. Drop the previous faculty's departments.
           this.departments.set([]);
           this.departmentTotal.set(0);
           this.campusFilter.set(campusId);
+          this.campusFilterName.set(created.campusName);
           this.loadFaculties(1);
         },
         error: (error: unknown) => {

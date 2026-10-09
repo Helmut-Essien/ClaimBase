@@ -42,7 +42,13 @@ describe('StaffComponent', () => {
       pageSize: 20,
       totalCount: 0,
     });
-    http.expectOne((request) => request.url === `${environment.apiUrl}/api/position-titles`).flush({
+    http.expectOne(`${environment.apiUrl}/api/position-titles?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+    http.expectOne(`${environment.apiUrl}/api/position-titles?page=1&pageSize=100`).flush({
       items: [],
       page: 1,
       pageSize: 100,
@@ -115,6 +121,76 @@ describe('StaffComponent', () => {
       (button as HTMLButtonElement).textContent?.includes('Remove'),
     ) as HTMLButtonElement;
     expect(remove.disabled).toBe(true);
+    http.verify();
+  });
+
+  it('pages the title catalog separately from the appointment lookup', () => {
+    const fixture = TestBed.createComponent(StaffComponent);
+    const http = TestBed.inject(HttpTestingController);
+    flushList(http);
+
+    fixture.componentInstance.loadTitles(2);
+    http.expectOne(`${environment.apiUrl}/api/position-titles?page=2&pageSize=20`).flush({
+      items: [{ id: 'title', name: 'Professor' }],
+      page: 2,
+      pageSize: 20,
+      totalCount: 21,
+    });
+
+    expect(fixture.componentInstance.titlePage()).toBe(2);
+    expect(fixture.componentInstance.titles().map((title) => title.name)).toEqual(['Professor']);
+    http.verify();
+  });
+
+  it('does not call the title catalog empty when that page fails', () => {
+    const fixture = TestBed.createComponent(StaffComponent);
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${environment.apiUrl}/api/staff?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+    http.expectOne(`${environment.apiUrl}/api/position-titles?page=1&pageSize=20`).flush(
+      { message: 'Position titles could not be loaded.' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    http.expectOne(`${environment.apiUrl}/api/position-titles?page=1&pageSize=100`).flush({
+      items: [],
+      page: 1,
+      pageSize: 100,
+      totalCount: 0,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Position titles could not be loaded.');
+    expect(fixture.nativeElement.textContent).not.toContain('No position titles yet.');
+    http.verify();
+  });
+
+  it('keeps the newer title lookup when an older one returns later', () => {
+    const fixture = TestBed.createComponent(StaffComponent);
+    const http = TestBed.inject(HttpTestingController);
+    flushList(http);
+
+    fixture.componentInstance.loadTitleChoices();
+    fixture.componentInstance.loadTitleChoices();
+    const pending = http.match(`${environment.apiUrl}/api/position-titles?page=1&pageSize=100`);
+    expect(pending.length).toBe(2);
+    pending[1].flush({
+      items: [{ id: 'new', name: 'Professor' }],
+      page: 1,
+      pageSize: 100,
+      totalCount: 1,
+    });
+    pending[0].flush({
+      items: [{ id: 'old', name: 'Lecturer' }],
+      page: 1,
+      pageSize: 100,
+      totalCount: 1,
+    });
+
+    expect(fixture.componentInstance.titleChoices().map((title) => title.name)).toEqual(['Professor']);
     http.verify();
   });
 });

@@ -25,6 +25,12 @@ describe('FacultiesComponent', () => {
       pageSize: 100,
       totalCount: 1,
     });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+    });
     http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
       items: [
         { id: 'faculty-1', campusId: 'campus-1', campusName: 'Main Campus', name: 'Science' },
@@ -84,6 +90,12 @@ describe('FacultiesComponent', () => {
       pageSize: 100,
       totalCount: 1,
     });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+    });
     http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
       items: [{ id: 'faculty-1', campusId: 'campus-1', campusName: 'Main Campus', name: 'Science' }],
       page: 1,
@@ -109,6 +121,12 @@ describe('FacultiesComponent', () => {
       items: [{ id: 'campus-1', name: 'Main Campus' }],
       page: 1,
       pageSize: 100,
+      totalCount: 1,
+    });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
       totalCount: 1,
     });
     http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
@@ -158,6 +176,12 @@ describe('FacultiesComponent', () => {
       pageSize: 100,
       totalCount: 1,
     });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+    });
     http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
       items: [{ id: 'faculty-1', campusId: 'campus-1', campusName: 'Main Campus', name: 'Science' }],
       page: 1,
@@ -203,6 +227,170 @@ describe('FacultiesComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Arts');
     expect(fixture.nativeElement.textContent).not.toContain('Physics');
+    http.verify();
+  });
+
+  it('pages campus chips without changing the faculty form lookup', () => {
+    const fixture = TestBed.createComponent(FacultiesComponent);
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=100`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 100,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+
+    fixture.componentInstance.loadCampusPage(2);
+    http.expectOne(`${base}/api/campuses?page=2&pageSize=20`).flush({
+      items: [{ id: 'campus-2', name: 'North Campus' }],
+      page: 2,
+      pageSize: 20,
+      totalCount: 21,
+    });
+
+    expect(fixture.componentInstance.campusPage()).toBe(2);
+    expect(fixture.componentInstance.campuses().map((campus) => campus.name)).toEqual(['North Campus']);
+    expect(fixture.componentInstance.campusChoices().map((campus) => campus.name)).toEqual(['Main Campus']);
+    http.verify();
+  });
+
+  it('keeps the selected campus pressed when that chip is on another page', () => {
+    const fixture = TestBed.createComponent(FacultiesComponent);
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=100`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 100,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+
+    fixture.componentInstance.filterCampus('campus-1');
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20&campusId=campus-1`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+    fixture.componentInstance.loadCampusPage(2);
+    http.expectOne(`${base}/api/campuses?page=2&pageSize=20`).flush({
+      items: [{ id: 'campus-2', name: 'North Campus' }],
+      page: 2,
+      pageSize: 20,
+      totalCount: 21,
+    });
+    fixture.detectChanges();
+
+    const pressed = [...fixture.nativeElement.querySelectorAll('button')].filter(
+      (button) => (button as HTMLButtonElement).getAttribute('aria-pressed') === 'true',
+    );
+    expect(pressed.map((button) => (button as HTMLButtonElement).textContent?.trim())).toEqual(['Main Campus']);
+    http.verify();
+  });
+
+  it('shows a campus load error instead of an empty catalog', () => {
+    const fixture = TestBed.createComponent(FacultiesComponent);
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=100`).flush(
+      { message: 'Campuses could not be loaded.' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush(
+      { message: 'Campuses could not be loaded.' },
+      { status: 500, statusText: 'Server Error' },
+    );
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Campuses could not be loaded.');
+    expect(fixture.nativeElement.textContent).not.toContain('No campuses yet');
+    http.verify();
+  });
+
+  it('names the campus filter after a faculty is created on another chip page', () => {
+    const fixture = TestBed.createComponent(FacultiesComponent);
+    const http = TestBed.inject(HttpTestingController);
+
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=100`).flush({
+      items: [
+        { id: 'campus-1', name: 'Main Campus' },
+        { id: 'campus-2', name: 'North Campus' },
+      ],
+      page: 1,
+      pageSize: 100,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/campuses?page=1&pageSize=20`).flush({
+      items: [{ id: 'campus-1', name: 'Main Campus' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 21,
+    });
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+
+    fixture.componentInstance.facultyForm.controls.campusId.setValue('campus-2');
+    fixture.componentInstance.facultyForm.controls.name.setValue('Arts');
+    fixture.componentInstance.submitFaculty();
+    http.expectOne(`${base}/api/faculties`).flush({
+      id: 'faculty-2',
+      campusId: 'campus-2',
+      campusName: 'North Campus',
+      name: 'Arts',
+    });
+    http.expectOne(`${base}/api/faculties?page=1&pageSize=20&campusId=campus-2`).flush({
+      items: [{ id: 'faculty-2', campusId: 'campus-2', campusName: 'North Campus', name: 'Arts' }],
+      page: 1,
+      pageSize: 20,
+      totalCount: 1,
+    });
+    http.expectOne(`${base}/api/departments?page=1&pageSize=20&facultyId=faculty-2`).flush({
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+    });
+    fixture.detectChanges();
+
+    const pressed = [...fixture.nativeElement.querySelectorAll('button')].filter(
+      (button) => (button as HTMLButtonElement).getAttribute('aria-pressed') === 'true',
+    );
+    expect(pressed.map((button) => (button as HTMLButtonElement).textContent?.trim())).toContain('North Campus');
     http.verify();
   });
 });

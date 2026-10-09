@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -43,6 +43,7 @@ export class RatesComponent {
   private readonly academicApi = inject(AcademicApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly tenant = inject(TenantStateService);
+  private readonly injector = inject(Injector);
   private matrixGeneration = 0;
   private historyGeneration = 0;
   private transportGeneration = 0;
@@ -137,6 +138,28 @@ export class RatesComponent {
     return formatMoney(amount, this.tenant.currencyCode());
   }
 
+  /** Teaching amount label. GHS is cedis; any other tenant keeps its currency code. */
+  hourlyLabel(): string {
+    return this.tenant.currencyCode() === 'GHS' ? 'Cedis per hour' : `${this.tenant.currencyCode()} per hour`;
+  }
+
+  /** Transport amount label. Paid once per teaching day, not per hour. */
+  dailyLabel(): string {
+    return this.tenant.currencyCode() === 'GHS' ? 'Cedis per teaching day' : `${this.tenant.currencyCode()} per teaching day`;
+  }
+
+  /** Names the cell the teaching form will save. Null until both sides are chosen. */
+  pairCaption(): string | null {
+    const title = this.titles().find((item) => item.id === this.teachingForm.controls.positionTitleId.value);
+    const qualification = this.qualifications().find(
+      (item) => item.id === this.teachingForm.controls.qualificationId.value,
+    );
+    if (!title || !qualification) {
+      return null;
+    }
+    return `${title.name} × ${qualification.name}`;
+  }
+
   /** Shows the half-open span. A null end has not been replaced. */
   rangeLabel(rate: { effectiveFrom: string; effectiveTo: string | null }): string {
     const start = formatCalendarDate(rate.effectiveFrom);
@@ -162,6 +185,23 @@ export class RatesComponent {
     this.teachingForm.patchValue({ positionTitleId, qualificationId });
     this.teachingError.set(null);
     this.loadHistory(1);
+    this.revealTeachingForm();
+  }
+
+  /** On a phone the editor sits under a sideways matrix. Bring that cell's form into view. */
+  private revealTeachingForm(): void {
+    if (typeof window.matchMedia !== 'function' || window.matchMedia('(min-width: 64rem)').matches) {
+      return;
+    }
+    afterNextRender(
+      () => {
+        const form = document.getElementById('teaching-rate');
+        if (form && typeof form.scrollIntoView === 'function') {
+          form.scrollIntoView({ block: 'start' });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   /** Reloads the selected cell after the pair dropdowns change. */

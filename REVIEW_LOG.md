@@ -87,3 +87,61 @@
 
 - Postgres from `docker compose up -d` is still left running on purpose when debugging stops.
 - A stop task can still close a listener that a newer debug session binds to the same port if the two overlap.
+
+## Iteration 6
+
+Portal navigation UI slice (uncommitted). Reviews: Bugbot, security review, senior pass, UI/UX pass. Repeated until the concrete findings were fixed.
+
+### Findings fixed
+
+- Medium: `.cb-gap` used `#e65100` on `#fff3e0`, which is 3.46:1. The 12px warning is now `#bf360c` (5.11:1).
+- Medium: semester and course edit banners were `role="status"` bound to the live form value, so each keystroke re-announced the banner. The banner now keeps the name or code from when Edit was pressed. Covered by the semester and course specs.
+- Medium: Edit scrolled the form up and left focus on the Edit button, which had moved off screen. Focus now moves to the name or code field. Covered by those specs.
+- Medium: `.cb-anchor` used a fixed `5.5rem` scroll offset. The phone header also adds `env(safe-area-inset-top)`, so a notched phone could cover the field. The offset now includes that inset, and from `lg` it drops to `1.5rem` because that header is hidden.
+- Medium: the staff title catalog was `lg:sticky`. A long title list is taller than the viewport and would pin its own end out of reach. Sticky was removed. The catalog still sits in the side column from `lg`.
+- Low: the pager range could read backwards (`41–25 of 25`) when the page number was past the last page. The start is capped at the total. Covered by `pager.component.spec.ts`.
+- Low: "No appointment" did not say the gap is for today. Screen readers now hear "No appointment in force today" via visually hidden text.
+
+### Findings dismissed
+
+- Bugbot, first pass: no bugs.
+- Bugbot, later passes: one candidate each time was removed by the findings validator, including a pager range that is now clamped and tested. No remaining file and line was left after the validator.
+- Security review, every pass: no medium or higher issues. Templates use Angular interpolation. Element ids passed to `scrollIntoView` and `focus` are fixed. Home still loads semesters only for setup roles, and the API still enforces that.
+- Senior review: `appointmentTitle` only labels the staff list. It does not price a claim. A page is 20 lecturers, and the screen is `OnPush`. Moving `calendarToday` did not change the UTC fallback. No new deploy, log, or query path.
+- UI/UX review: choosing a faculty or a rate cell does not focus a text field, so a phone does not open the keyboard while browsing. The rate status line updates when the position or qualification changes, not on each amount keystroke. Dark mode, analytics, and localization stay out of this slice. The design system is the light theme, and Portal copy is English. Tenant currency still formats as `GHS 1,250.00`.
+
+### Remaining
+
+- None.
+
+### Notes
+
+- Portal unit tests: 56 passed.
+
+## Iteration 7
+
+Pagination slice (uncommitted). Reviews: Bugbot, security review, senior pass, UI/UX pass. Repeated until the later passes were clean.
+
+### Findings fixed
+
+- Medium: paging the faculty campus chips left `campusFilter` set while the pressed chip left the screen, so the faculty list stayed filtered with no selected chip. The selected campus stays in the chip group, including after a faculty is created on a campus that is not on the current chip page. Covered by `faculties.component.spec.ts`.
+- Medium: a failed campus load was stored on `facultyLoadError`, which the faculty request clears, and the template treated a zero total as "No campuses yet". Chip-page and form-lookup failures now have their own banners and leave the faculty list in place. Covered by the faculties spec.
+- Medium: a failed position-title catalog request still said "No position titles yet", and a failed appointment lookup said to add a title first. Those failures now have their own alerts. Covered by `staff.component.spec.ts`.
+- Low: a slower appointment-title lookup could overwrite a newer one. The dropdown ignores a stale response. Covered by the staff spec.
+
+### Findings dismissed
+
+- Bugbot, first pass: two candidates were removed by the findings validator and were not restated with a file and line. The one finding that remained (the hidden campus filter) was verified and fixed.
+- Bugbot, after the fixes above: no bugs.
+- Security review, every pass: no medium or higher issues. Templates still use Angular interpolation. Campus and title ids are still checked on the server inside the tenant. Lookup caps do not grant another tenant's rows.
+- Senior review: the extra campus and title requests are one catalog page and one lookup, each capped by `PageLimits`. They do not download every page. No new deploy, log, or query path.
+- UI/UX review: the off-page campus chip is a 2.75rem button in the "Campus filter" group, with `aria-pressed` and the existing ink fill. Dark mode, analytics, and localization stay out of this slice. The design system is the light theme, and Portal copy is English.
+
+### Remaining
+
+- None.
+
+### Notes
+
+- Portal unit tests: 63 passed.
+- Home still finds the open semester with one lookup of 100, ordered by start date descending. An older open semester past that page would not appear on Home. The dashboard is not a paged catalog.

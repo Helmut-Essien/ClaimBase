@@ -1,6 +1,6 @@
 ---
 iteration: 1
-max_iterations: 0
+max_iterations: 6
 completion_promise: "REVIEWS CLEAN"
 ---
 

@@ -77,6 +77,7 @@ What this role should do next.
 - Counts: claims awaiting this role, sessions omitted for a missing rate.
 - Recent claims for the role's scope (lecturers in the HoD's department, or the whole tenant for Finance).
 - Empty state is zero counts, not illustrative sample rows.
+- Finding the open semester is one lookup of at most 100. Home is not a paged catalog.
 
 ---
 
@@ -90,7 +91,7 @@ Create a semester before anyone can log sessions.
 ### Content
 - Name, start date, end date, status.
 - Actions: Open, Close. Open is refused when another open semester covers the same dates.
-- Closed semesters stay visible and read-only.
+- Closed semesters stay visible and read-only. The list pages at 20.
 
 ---
 
@@ -102,8 +103,8 @@ Create a semester before anyone can log sessions.
 Catalog that session logs and the rate matrix both use.
 
 ### Content
-- Qualifications are an editable list on this area.
-- Course form: code, name, qualification. Code is uppercase.
+- Qualifications are an editable list on this area, paged at 20. The qualification dropdown on a course is a lookup of at most 100 and says when it is short.
+- Course form: code, name, qualification. Code is uppercase. The course list pages at 20.
 - Deleting a qualification that courses still use is a 409 shown inline.
 - Position titles are not edited here. A lecturer's position is recorded on the staff page.
 
@@ -121,6 +122,7 @@ Create a campus, then the faculties on that campus, then the departments under e
 - Faculty name, unique on the selected campus. The same name may be used on another campus.
 - Under each faculty: department name, unique inside that faculty.
 - A faculty always displays its campus. A department always displays its faculty. There is no faculty without a campus, and no department without a faculty.
+- Campus, faculty, and department catalogs page at 20. Faculty campus chips page the same way. The campus dropdown on the faculty form is a lookup of at most 100 and says when it is short.
 
 ## 6. Staff
 
@@ -134,7 +136,8 @@ People who can be claimed, including part-time and full-time.
 - Department assignments: at least one, each shown as campus, faculty, and department. More than one is allowed, including departments on different campuses. The form cannot save with an empty list, and the last assignment cannot be removed.
 - Position records on this lecturer: title, effective from, effective to. This is the only place a person is given a position.
 - Overlapping position dates show the API 409 on that row.
-- The title dropdown lists shared titles (Professor, Senior Lecturer, and any the tenant added). Adding a row here creates the lecturer's position record. It does not create a new title unless the admin is maintaining the title list beside the rates.
+- The lecturer list pages at 20. The position-title catalog beside it pages at 20. The title dropdown on an appointment is a lookup of at most 100 and says when it is short. Adding a row on the lecturer creates that person's appointment. It does not create a title; titles are maintained on the catalog.
+- Department assignment dropdowns are lookups of at most 100 and say when they are short. Appointments already stored on the lecturer stay on that record.
 - Employment type is a label. The form does not say full-time staff are excluded.
 
 ---
@@ -147,7 +150,8 @@ People who can be claimed, including part-time and full-time.
 Set the hourly teaching matrix and the transport rate. This page is not part of creating a semester. An amount with no end date keeps applying in later semesters until management issues a new one.
 
 ### Content
-- Matrix: cedis per hour for one rank and one qualification (Senior Lecturer × Diploma, Lecturer × Diploma), plus effective from / to. Leave the end date empty to carry the amount forward.
+- Matrix: cedis per hour for one rank and one qualification (Senior Lecturer × Diploma, Lecturer × Diploma), plus effective from / to. Leave the end date empty to carry the amount forward. The axes are lookups of at most 100 and say when they are short. The matrix stays one grid.
+- Teaching-rate history under a cell, and the transport timeline, page at 20.
 - Saving a new amount starts a new row. It does not ask the admin to re-enter the whole matrix for the next semester.
 - Transport section: a single timeline for the tenant. Copy states it is paid once per teaching day, for every position, and is not an hourly rate.
 - Gap hint: dates with no row will be omitted from claims, not priced at zero silently.

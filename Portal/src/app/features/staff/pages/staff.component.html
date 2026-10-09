@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
   <div>
     <h1 class="page-title">Staff</h1>
-    <p class="mt-1 max-w-xl text-sm text-muted">
+    <p class="page-lede">
       People who can be claimed, part-time and full-time. A lecturer belongs to at least one department and may belong to more.
     </p>
   </div>
@@ -11,6 +11,9 @@
 </div>
 
 @if (panel() === 'list') {
+  <!-- Titles stay beside the list from lg so a long lecturer page does not hide the catalog rates depend on. -->
+  <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+  <div>
 
   @if (loadError()) {
     <p class="cb-banner" role="alert">{{ loadError() }}</p>
@@ -22,12 +25,21 @@
       <p class="mt-1 text-sm text-muted">Add the first person who can be claimed.</p>
     </div>
   } @else {
-    <ul class="mt-8 space-y-3 lg:hidden">
+    <p class="mt-8 text-sm text-muted">{{ totalCount() === 1 ? '1 lecturer' : totalCount() + ' lecturers' }}</p>
+    <ul class="mt-3 space-y-3 lg:hidden">
       @for (staff of items(); track staff.id) {
         <li class="cb-card">
           <p class="font-semibold text-ink">{{ staff.displayName }}</p>
           <p class="mt-1 font-mono text-sm">{{ staff.staffNumber }}</p>
-          <p class="mt-1 text-sm">{{ employment(staff.employmentType) }}</p>
+          <p class="mt-1 text-sm">
+            {{ employment(staff.employmentType) }}
+            ·
+            @if (appointmentTitle(staff); as title) {
+              {{ title }}
+            } @else {
+              <span class="cb-gap">No appointment<span class="sr-only"> in force today</span></span>
+            }
+          </p>
           <ul class="mt-2 space-y-1 text-sm text-muted">
             @for (department of staff.departments; track department.departmentId) {
               <li>{{ department.campusName }} · {{ department.facultyName }} · {{ department.departmentName }}</li>
@@ -37,7 +49,7 @@
         </li>
       }
     </ul>
-    <table class="cb-sheet mt-8 hidden w-full border-collapse lg:table">
+    <table class="cb-sheet mt-4 hidden w-full border-collapse lg:table">
       <thead>
         <tr>
           <th class="cb-th">Name</th>
@@ -52,7 +64,16 @@
           <tr>
             <td class="cb-td font-semibold">{{ staff.displayName }}</td>
             <td class="cb-td font-mono">{{ staff.staffNumber }}</td>
-            <td class="cb-td">{{ employment(staff.employmentType) }}</td>
+            <td class="cb-td">
+              <p>{{ employment(staff.employmentType) }}</p>
+              @if (appointmentTitle(staff); as title) {
+                <p class="mt-1">{{ title }}</p>
+              } @else {
+                <p class="mt-1">
+                  <span class="cb-gap">No appointment<span class="sr-only"> in force today</span></span>
+                </p>
+              }
+            </td>
             <td class="cb-td">
               @for (department of staff.departments; track department.departmentId) {
                 <p>{{ department.campusName }} · {{ department.facultyName }} · {{ department.departmentName }}</p>
@@ -68,9 +89,10 @@
     <app-pager [page]="page()" [pageSize]="pageSize" [totalCount]="totalCount()" (pageChange)="load($event)" />
   }
 
-  <section class="mt-12 max-w-xl">
-    <h2 class="text-lg font-semibold text-ink">Position titles</h2>
-    <p class="mt-2 text-base">
+  </div>
+  <section class="cb-form">
+    <h2 class="mt-4 text-lg font-semibold text-ink">Position titles</h2>
+    <p class="mt-2 text-sm text-muted">
       Shared catalog for every lecturer. Adding a title does not assign it to anyone. An appointment is recorded on the lecturer.
     </p>
     <form class="mt-4" [formGroup]="titleForm" (ngSubmit)="submitTitle()" novalidate>
@@ -86,23 +108,35 @@
         {{ submittingTitle() ? 'Please wait…' : 'Add title' }}
       </button>
     </form>
-    @if (titles().length === 0) {
+    @if (titleLoadError()) {
+      <p class="cb-banner" role="alert">{{ titleLoadError() }}</p>
+    }
+    @if (titlesLoaded() && !titleLoadError() && titleTotal() === 0) {
       <p class="mt-6 text-base">No position titles yet.</p>
-    } @else {
-      <ul class="mt-6 space-y-2">
+    } @else if (titlesLoaded() && titleTotal() > 0) {
+      <ul class="mt-4 divide-y divide-paper-border">
         @for (title of titles(); track title.id) {
-          <li class="cb-card">{{ title.name }}</li>
+          <li class="py-2 text-sm font-semibold text-ink">{{ title.name }}</li>
         }
       </ul>
-    }
-    @if (titlesTruncated()) {
-      <p class="mt-3 text-sm text-muted">Showing the first {{ lookupSize }} titles.</p>
+      <app-pager
+        [page]="titlePage()"
+        [pageSize]="pageSize"
+        [totalCount]="titleTotal()"
+        (pageChange)="loadTitles($event)"
+      />
     }
   </section>
+  </div>
 } @else {
-  <button type="button" class="mt-4 inline-flex h-11 items-center font-semibold text-ink" (click)="cancel()">Back to staff</button>
+  <button type="button" class="mt-6 inline-flex h-11 items-center text-sm font-semibold text-ink" (click)="cancel()">
+    Back to staff
+  </button>
+  <h2 class="mt-2 text-lg font-semibold text-ink">
+    {{ panel() === 'create' ? 'Add lecturer' : current()?.displayName }}
+  </h2>
 
-  <form class="mt-4 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <form id="staff-form" class="cb-form cb-anchor mt-4 max-w-3xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <label class="cb-label" for="staff-number">Staff number</label>
     <input
       id="staff-number"
@@ -181,6 +215,15 @@
           </select>
         </div>
       </div>
+      @if (campusesTruncated()) {
+        <p class="mt-2 text-sm text-muted">Showing the first {{ lookupSize }} campuses.</p>
+      }
+      @if (facultiesTruncated()) {
+        <p class="mt-2 text-sm text-muted">Showing the first {{ lookupSize }} faculties.</p>
+      }
+      @if (departmentsTruncated()) {
+        <p class="mt-2 text-sm text-muted">Showing the first {{ lookupSize }} departments.</p>
+      }
       <button type="button" class="cb-button cb-button-secondary mt-4" (click)="addDepartment()">Add department</button>
     }
 
@@ -217,21 +260,26 @@
   </form>
 
   @if (panel() === 'edit') {
-    <form class="mt-10 max-w-xl" [formGroup]="positionForm" (ngSubmit)="submitPosition()" novalidate>
-      <h2 class="text-lg font-semibold text-ink">Position appointments</h2>
+    <form class="cb-form mt-8 max-w-3xl" [formGroup]="positionForm" (ngSubmit)="submitPosition()" novalidate>
+      <h2 class="mt-4 text-lg font-semibold text-ink">Position appointments</h2>
       <p class="mt-2 text-sm text-muted">
         This is the only place a person is given a position. The end date is the first day not included. Leave it empty
         while the appointment continues. Dates use {{ zoneCaption() }}.
       </p>
-      @if (titles().length === 0) {
+      @if (titleChoiceError()) {
+        <p class="cb-banner" role="alert">{{ titleChoiceError() }}</p>
+      } @else if (titleChoices().length === 0) {
         <p class="mt-4 text-base">Add a position title on the staff list first. Adding a title does not appoint this lecturer.</p>
       } @else {
         <label class="cb-label" for="position-title">Title</label>
         <select id="position-title" formControlName="positionTitleId" class="cb-input">
-          @for (title of titles(); track title.id) {
+          @for (title of titleChoices(); track title.id) {
             <option [value]="title.id">{{ title.name }}</option>
           }
         </select>
+        @if (titleChoicesTruncated()) {
+          <p class="mt-2 text-sm text-muted">Showing the first {{ lookupSize }} titles.</p>
+        }
         <div class="grid gap-3 sm:grid-cols-2">
           <div>
             <label class="cb-label" for="position-from">Effective from</label>

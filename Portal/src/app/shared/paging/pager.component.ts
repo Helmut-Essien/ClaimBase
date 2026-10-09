@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
         >
           Previous
         </button>
-        <p>Page {{ page() }} of {{ pageCount() }}</p>
+        <p class="text-center text-muted tabular-nums">{{ rangeStart() }}–{{ rangeEnd() }} of {{ totalCount() }}</p>
         <button
           type="button"
           class="cb-button cb-button-secondary"
@@ -46,4 +46,16 @@ export class PagerComponent {
 
   /** Page count derived from the total. At least 1. */
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
+
+  /** First row number on this page. A page past the end does not start after the total. */
+  readonly rangeStart = computed(() => {
+    const start = (this.page() - 1) * this.pageSize() + 1;
+    return Math.min(Math.max(start, 1), Math.max(this.totalCount(), 1));
+  });
+
+  /** Last row number on this page, capped at the total. */
+  readonly rangeEnd = computed(() => {
+    const end = Math.min(this.page() * this.pageSize(), this.totalCount());
+    return Math.max(end, this.rangeStart());
+  });
 }

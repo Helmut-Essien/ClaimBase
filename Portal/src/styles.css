@@ -43,6 +43,14 @@
   color: var(--color-slate);
 }
 
+.page-lede {
+  margin-top: 0.25rem;
+  max-width: 40rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
 /* Inactive nav is quiet. The current route fills with AppBlue so the place is obvious. */
 .nav-link {
   color: var(--color-muted);
@@ -145,12 +153,13 @@
 }
 
 /* Lists, forms, and empty catalogs sit on white panels so the gray page can frame them. */
+/* The left edge marks a record. A border-left would be wiped by the border shorthand, so the edge is an inset shadow. */
 .cb-card {
   border-radius: 0.75rem;
   border: 1px solid var(--color-paper-border);
   background: #fff;
-  padding: 0.75rem 1rem;
-  box-shadow: 0 2px 8px rgb(0 90 156 / 0.08);
+  padding: 0.75rem 1rem 0.75rem 1.15rem;
+  box-shadow: inset 4px 0 0 var(--color-ink), 0 1px 3px rgb(0 0 0 / 0.08);
 }
 
 .cb-form {
@@ -158,7 +167,18 @@
   border: 1px solid var(--color-paper-border);
   background: #fff;
   padding: 0.25rem 1.25rem 1.25rem;
-  box-shadow: 0 2px 8px rgb(0 90 156 / 0.08);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* Phone header is min-h-14 plus the notch inset. A fixed 5.5rem still hides the field under that bar. */
+.cb-anchor {
+  scroll-margin-top: calc(4.25rem + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 64rem) {
+  .cb-anchor {
+    scroll-margin-top: 1.5rem;
+  }
 }
 
 .cb-empty {
@@ -168,7 +188,18 @@
   background: #fff;
   padding: 2.5rem 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgb(0 90 156 / 0.08);
+  box-shadow: inset 4px 0 0 var(--color-ink), 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* In-pane empty. The full empty card would crowd the department editor. */
+.cb-empty-compact {
+  margin-top: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px dashed #e0e0e0;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-muted);
 }
 
 .cb-sheet {
@@ -182,7 +213,7 @@
     border-radius: 0.75rem;
     border: 1px solid var(--color-paper-border);
     background: #fff;
-    box-shadow: 0 2px 8px rgb(0 90 156 / 0.08);
+    box-shadow: inset 4px 0 0 var(--color-ink), 0 1px 3px rgb(0 0 0 / 0.08);
   }
 
   .cb-sheet .cb-th,
@@ -292,7 +323,7 @@
     border: 1px solid var(--color-paper-border);
     background: #fff;
     padding: 1.25rem 1.25rem 1rem;
-    box-shadow: 0 2px 8px rgb(0 90 156 / 0.08);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
   }
 
   /* Tables use the pane's side edges so the header bar is the card, not a strip floating in the padding. */
@@ -322,7 +353,8 @@
 
 /* Phone faculty cards use .cb-card, whose border shorthand would wipe a utility left edge. */
 .cb-card.cb-card-selected {
-  box-shadow: inset 4px 0 0 var(--color-ink), 0 2px 8px rgb(0 90 156 / 0.08);
+  background: #e3f2fd;
+  box-shadow: inset 4px 0 0 var(--color-ink), 0 1px 3px rgb(0 0 0 / 0.08);
 }
 
 .cb-faculty-row {
@@ -386,4 +418,71 @@
   border-radius: 9999px;
   background: #e3f2fd;
   color: var(--color-ink);
+}
+
+/* Home counts. Same record edge as a list card, with room for the number. */
+.cb-stat {
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-paper-border);
+  background: #fff;
+  padding: 1rem 1.25rem 1rem 1.35rem;
+  box-shadow: inset 4px 0 0 var(--color-ink), 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* The row being edited, so Save is obviously about that record. */
+.cb-row-editing {
+  background: #e3f2fd;
+}
+
+.cb-edit-note {
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+  background: #e3f2fd;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-dark);
+}
+
+/* A matrix cell is a button. The gap tint is a warning, and it does not recolor a stored amount. */
+.cb-rate-cell {
+  display: flex;
+  min-height: 3.5rem;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.125rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-paper-border);
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.cb-rate-cell:hover {
+  background: color-mix(in srgb, var(--color-ink) 6%, white);
+}
+
+.cb-rate-cell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cb-rate-cell-selected,
+.cb-rate-cell-selected:hover {
+  border-color: var(--color-ink);
+  background: #e3f2fd;
+  box-shadow: inset 4px 0 0 var(--color-ink);
+}
+
+/* #e65100 on #fff3e0 is 3.46:1. #bf360c on that wash is 5.11:1, so the 12px warning stays readable. */
+.cb-gap {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: #fff3e0;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #bf360c;
 }

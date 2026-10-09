@@ -1,7 +1,8 @@
 <h1 class="page-title">Campuses</h1>
-<p class="mt-1 max-w-xl text-sm text-muted">A campus belongs to this university. Semesters and rates stay with the university, not with a campus.</p>
+<p class="page-lede">A campus belongs to this university. Semesters and rates stay with the university, not with a campus.</p>
 
-<form class="cb-form mt-6 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+<h2 class="mt-8 text-lg font-semibold text-ink">Add a campus</h2>
+<form id="campus-form" class="cb-form cb-anchor mt-4 max-w-xl" [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <label class="cb-label" for="campus-name">Name</label>
   <input
     id="campus-name"
@@ -31,7 +32,9 @@
     <p class="mt-1 text-sm text-muted">Add the first campus for this university.</p>
   </div>
 } @else {
-  <ul class="mt-8 space-y-3 lg:hidden">
+  <h2 class="mt-10 text-lg font-semibold text-ink">On file</h2>
+  <p class="mt-1 text-sm text-muted">{{ totalCount() === 1 ? '1 campus' : totalCount() + ' campuses' }}</p>
+  <ul class="mt-4 space-y-3 lg:hidden">
     @for (campus of items(); track campus.id) {
       <li class="cb-card">
         <p class="font-semibold text-ink">{{ campus.name }}</p>

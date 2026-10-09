@@ -76,6 +76,11 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 - Search chips scroll horizontally on small screens.
 - Cards below `lg`, table from `lg`.
 - Empty catalog copy is different from "no rows match this search".
+- A catalog the admin reads uses `app-pager` and `PAGE_LIMITS.defaultSize` (20): campuses, faculties, departments, the faculty campus chips, semesters, qualifications, courses, lecturers, position titles, teaching-rate history, and transport. The pager stays hidden when that filter fits on one page.
+- A dropdown, rate-matrix axis, or the home "find the open semester" call is a lookup: one request of `PAGE_LIMITS.maxSize` (100). When `totalCount` is larger than the page, say "Showing the first 100 …". Do not walk further pages in the browser.
+- The faculty form's campus dropdown, the course qualification dropdown, the appointment title dropdown, and the staff assignment dropdowns stay lookups. Their catalogs are the paged lists.
+- Appointments on one lecturer arrive with that lecturer. Leave them on the record.
+- The rate matrix stays one grid. History under a cell and the transport timeline are the paged catalogs.
 
 ### Rate matrix
 
@@ -142,5 +147,5 @@ The sidebar is a drawer below `lg` and stays open from `lg` (64rem). Do not pin 
 - A bottom nav, or a persistent sidebar below `lg`
 - Sticky bars without safe-area insets
 - Nav items for routes that are not implemented
-- Unpaged tables
+- Unpaged catalog tables, or concatenating lookup pages in the browser
 - Showing concurrency tokens or internal ids as the primary label (staff name and course code are the labels)

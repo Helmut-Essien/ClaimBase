@@ -1,10 +1,13 @@
 <h1 class="page-title">Courses</h1>
-<p class="mt-1 max-w-xl text-sm text-muted">
+<p class="page-lede">
   Qualifications and courses are shared by the university. A lecturer's position is recorded on the staff page, not here.
 </p>
 
-<section class="mt-8 max-w-xl">
+<!-- Qualifications stay in a narrow column. A course needs one before it can be added, so that catalog comes first on a phone. -->
+<div class="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
+<section>
   <h2 class="text-lg font-semibold text-ink">Qualifications</h2>
+  <p class="mt-1 text-sm text-muted">Each course picks one of these names.</p>
   <form class="cb-form mt-4" [formGroup]="qualificationForm" (ngSubmit)="submitQualification()" novalidate>
     <label class="cb-label" for="qualification-name">Name</label>
     <input
@@ -35,9 +38,12 @@
       <p class="mt-1 text-sm text-muted">Add Diploma, Degree, or the names this university uses.</p>
     </div>
   } @else {
-    <ul class="mt-6 space-y-3">
+    <p class="mt-6 text-sm text-muted">
+      {{ qualificationTotal() === 1 ? '1 qualification' : qualificationTotal() + ' qualifications' }}
+    </p>
+    <ul class="mt-3 space-y-3">
       @for (qualification of qualifications(); track qualification.id) {
-        <li class="cb-card">{{ qualification.name }}</li>
+        <li class="cb-card font-semibold text-ink">{{ qualification.name }}</li>
       }
     </ul>
     <app-pager
@@ -49,14 +55,19 @@
   }
 </section>
 
-<section class="mt-10 max-w-3xl">
+<section class="min-w-0">
   <h2 class="text-lg font-semibold text-ink">Courses</h2>
   @if (loadingChoices()) {
     <p class="mt-4 text-base">Please wait…</p>
   } @else if (choices().length === 0) {
     <p class="mt-4 text-base">Add a qualification before adding a course.</p>
   } @else {
-    <form class="cb-form mt-4" [formGroup]="courseForm" (ngSubmit)="submitCourse()" novalidate>
+    @if (editingCode(); as code) {
+      <p class="cb-edit-note" role="status">
+        Editing {{ code }}. Save updates this course. Cancel returns to adding a new one.
+      </p>
+    }
+    <form id="course-form" class="cb-form cb-anchor mt-4" [formGroup]="courseForm" (ngSubmit)="submitCourse()" novalidate>
       <label class="cb-label" for="course-code">Code</label>
       <input
         id="course-code"
@@ -107,9 +118,10 @@
       <p class="mt-1 text-sm text-muted">Add a course code so lecturers can log a session against it.</p>
     </div>
   } @else {
-    <ul class="mt-6 space-y-3 lg:hidden">
+    <p class="mt-6 text-sm text-muted">{{ courseTotal() === 1 ? '1 course' : courseTotal() + ' courses' }}</p>
+    <ul class="mt-3 space-y-3 lg:hidden">
       @for (course of courses(); track course.id) {
-        <li class="cb-card">
+        <li class="cb-card" [class.cb-card-selected]="editingId() === course.id">
           <p class="font-mono font-semibold text-ink">{{ course.code }}</p>
           <p class="mt-1">{{ course.name }}</p>
           <p class="mt-1 text-sm text-muted">{{ course.qualificationName }}</p>
@@ -128,7 +140,7 @@
       </thead>
       <tbody>
         @for (course of courses(); track course.id) {
-          <tr>
+          <tr [class.cb-row-editing]="editingId() === course.id">
             <td class="cb-td font-mono font-semibold">{{ course.code }}</td>
             <td class="cb-td">{{ course.name }}</td>
             <td class="cb-td">{{ course.qualificationName }}</td>
@@ -142,3 +154,4 @@
     <app-pager [page]="coursePage()" [pageSize]="pageSize" [totalCount]="courseTotal()" (pageChange)="loadCourses($event)" />
   }
 </section>
+</div>

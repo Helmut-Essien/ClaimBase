@@ -17,7 +17,7 @@ import {
   StaffPosition,
   employmentLabel,
 } from '../../academic/data/academic.models';
-import { formatCalendarDate, zoneAbbreviation } from '../../../shared/dates/calendar-date';
+import { calendarToday, formatCalendarDate, zoneAbbreviation } from '../../../shared/dates/calendar-date';
 import { readApiError } from '../../../shared/http/read-api-error';
 import { PAGE_LIMITS } from '../../../shared/paging/page-limits';
 import { PagerComponent } from '../../../shared/paging/pager.component';
@@ -43,6 +43,8 @@ export class StaffComponent {
   private readonly staffApi = inject(StaffApi);
   private readonly academicApi = inject(AcademicApi);
   private readonly tenant = inject(TenantStateService);
+  private titleGeneration = 0;
+  private titleChoiceGeneration = 0;
   private readonly destroyRef = inject(DestroyRef);
   private loadGeneration = 0;
 
@@ -70,14 +72,36 @@ export class StaffComponent {
   readonly loadError = signal<string | null>(null);
   readonly departmentError = signal<string | null>(null);
 
+  /** Position titles on the catalog page beside the lecturer list. */
   readonly titles = signal<PositionTitle[]>([]);
-  readonly titlesTruncated = signal(false);
+
+  readonly titlePage = signal(1);
+  readonly titleTotal = signal(0);
+  readonly titlesLoaded = signal(false);
+
+  /** Set when the title catalog page fails. A save error uses `titleError` instead. */
+  readonly titleLoadError = signal<string | null>(null);
+
+  /** Set when the appointment dropdown lookup fails. */
+  readonly titleChoiceError = signal<string | null>(null);
+
+  /** Titles offered when appointing a lecturer. A lookup, not the catalog page. */
+  readonly titleChoices = signal<PositionTitle[]>([]);
+
+  /** True when the appointment dropdown stopped at the lookup cap. */
+  readonly titleChoicesTruncated = signal(false);
+
   readonly submittingTitle = signal(false);
   readonly titleError = signal<string | null>(null);
 
   readonly campuses = signal<Campus[]>([]);
   readonly faculties = signal<Faculty[]>([]);
   readonly departments = signal<Department[]>([]);
+
+  /** True when an assignment dropdown stopped at the lookup cap. */
+  readonly campusesTruncated = signal(false);
+  readonly facultiesTruncated = signal(false);
+  readonly departmentsTruncated = signal(false);
 
   readonly submittingPosition = signal(false);
   readonly positionError = signal<string | null>(null);
@@ -119,7 +143,8 @@ export class StaffComponent {
 
   constructor() {
     this.load(1);
-    this.loadTitles();
+    this.loadTitles(1);
+    this.loadTitleChoices();
     this.form.controls.campusId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((campusId) => {
       this.loadFaculties(campusId);
     });
@@ -142,6 +167,25 @@ export class StaffComponent {
   /** Employment label. Both types stay on the form. */
   employment(value: string): string {
     return employmentLabel(value);
+  }
+
+  /**
+   * Title in force today. The end day is excluded, the same half-open rule as a rate.
+   * A day with no appointment is a gap, not a rank that still prices the session.
+   */
+  appointmentTitle(staff: StaffMember): string | null {
+    const day = calendarToday(this.tenant.timeZoneId());
+    let match: StaffPosition | null = null;
+    for (const position of staff.positions) {
+      const covers = position.effectiveFrom <= day && (position.effectiveTo === null || day < position.effectiveTo);
+      if (!covers) {
+        continue;
+      }
+      if (match === null || position.effectiveFrom > match.effectiveFrom) {
+        match = position;
+      }
+    }
+    return match?.positionTitleName ?? null;
   }
 
   /** Loads one page of lecturers. */
@@ -179,21 +223,59 @@ export class StaffComponent {
       });
   }
 
-  /** Loads the shared title catalog. A title here is not an appointment. */
-  loadTitles(): void {
+  /**
+   * Loads one page of the shared title catalog.
+   * A title here is not an appointment. The appointment dropdown uses `loadTitleChoices`.
+   */
+  loadTitles(page: number): void {
+    const generation = ++this.titleGeneration;
+    this.academicApi
+      .listPositionTitles(page, this.pageSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          if (generation !== this.titleGeneration) {
+            return;
+          }
+          this.titles.set(result.items);
+          this.titlePage.set(result.page);
+          this.titleTotal.set(result.totalCount);
+          this.titleLoadError.set(null);
+          this.titlesLoaded.set(true);
+        },
+        error: (error: unknown) => {
+          if (generation !== this.titleGeneration) {
+            return;
+          }
+          this.titlesLoaded.set(true);
+          this.titleLoadError.set(readApiError(error, 'Position titles could not be loaded.'));
+        },
+      });
+  }
+
+  /** Loads titles for the appointment dropdown. Further pages are not pulled into the browser. */
+  loadTitleChoices(): void {
+    const generation = ++this.titleChoiceGeneration;
     this.academicApi
       .listPositionTitles(1, this.lookupSize)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
-          this.titles.set(result.items);
-          this.titlesTruncated.set(result.totalCount > result.items.length);
+          if (generation !== this.titleChoiceGeneration) {
+            return;
+          }
+          this.titleChoices.set(result.items);
+          this.titleChoicesTruncated.set(result.totalCount > result.items.length);
+          this.titleChoiceError.set(null);
           if (!this.positionForm.controls.positionTitleId.value && result.items[0]) {
             this.positionForm.controls.positionTitleId.setValue(result.items[0].id);
           }
         },
         error: (error: unknown) => {
-          this.titleError.set(readApiError(error, 'Position titles could not be loaded.'));
+          if (generation !== this.titleChoiceGeneration) {
+            return;
+          }
+          this.titleChoiceError.set(readApiError(error, 'Position titles could not be loaded.'));
         },
       });
   }
@@ -255,7 +337,8 @@ export class StaffComponent {
         next: () => {
           this.submittingTitle.set(false);
           this.titleForm.reset();
-          this.loadTitles();
+          this.loadTitles(1);
+          this.loadTitleChoices();
         },
         error: (error: unknown) => {
           this.submittingTitle.set(false);
@@ -461,6 +544,7 @@ export class StaffComponent {
       .subscribe({
         next: (result) => {
           this.campuses.set(result.items);
+          this.campusesTruncated.set(result.totalCount > result.items.length);
           const first = result.items[0];
           if (first && !this.form.controls.campusId.value) {
             this.form.controls.campusId.setValue(first.id);
@@ -474,7 +558,9 @@ export class StaffComponent {
 
   private loadFaculties(campusId: string): void {
     this.faculties.set([]);
+    this.facultiesTruncated.set(false);
     this.departments.set([]);
+    this.departmentsTruncated.set(false);
     this.form.controls.facultyId.setValue('', { emitEvent: false });
     this.form.controls.departmentId.setValue('', { emitEvent: false });
     if (!campusId) {
@@ -490,6 +576,7 @@ export class StaffComponent {
             return;
           }
           this.faculties.set(result.items);
+          this.facultiesTruncated.set(result.totalCount > result.items.length);
           const first = result.items[0];
           if (first) {
             this.form.controls.facultyId.setValue(first.id);
@@ -503,6 +590,7 @@ export class StaffComponent {
 
   private loadPickerDepartments(facultyId: string): void {
     this.departments.set([]);
+    this.departmentsTruncated.set(false);
     this.form.controls.departmentId.setValue('', { emitEvent: false });
     if (!facultyId) {
       return;
@@ -517,6 +605,7 @@ export class StaffComponent {
             return;
           }
           this.departments.set(result.items);
+          this.departmentsTruncated.set(result.totalCount > result.items.length);
           const first = result.items[0];
           if (first) {
             this.form.controls.departmentId.setValue(first.id, { emitEvent: false });

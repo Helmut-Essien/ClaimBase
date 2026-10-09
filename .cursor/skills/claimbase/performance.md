@@ -65,7 +65,7 @@ Apply the usual practice for each technology. ClaimBase rules in [SKILL.md](SKIL
 - `ChangeDetectionStrategy.OnPush` on standalone components. Signals for UI state. No NgRx.
 - `@for` tracks entity `id`.
 - `takeUntilDestroyed()` on subscriptions. Debounce search (~300ms).
-- Request one page from the API. Do not download a semester of sessions and filter in the browser.
+- Request one page from the API. A catalog uses `PAGE_LIMITS.defaultSize` and `app-pager`. A dropdown or matrix axis uses one `maxSize` lookup and says when it is short. Do not download every page into the browser, and do not filter an unpaged list on the client.
 - No per-row animation on claim tables.
 
 ## MobileApp
@@ -83,7 +83,7 @@ Apply this section in slices 8 and 9.
 - Recomputing an approved claim from live rates while generating the PDF
 - Updating `Amount` inside the presence job
 - Loading all punches for a tenant to mark one claim
-- Unpaged Portal tables
+- Unpaged Portal catalog tables, or concatenating lookup pages in the browser
 - A second background stack besides Hangfire
 - MAUI code-behind that calls the API, writes SQLite, or handles sign-in
 - Sync-over-async, per-row queries, or client-side filtering of an unpaged list
